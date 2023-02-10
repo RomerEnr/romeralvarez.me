@@ -1,0 +1,27 @@
+---
+import HeaderLink from './HeaderLink.astro';
+import { IoLogoGithub } from "react-icons/io5/index.js";
+import { ThemeToggleButton } from './ThemeToggleButton.tsx';
+---
+
+<header class="fixed w-full p-2 z-20 backdrop-blur-md">
+	<div class="mx-auto max-w-3xl">
+		<nav class="flex item-center gap-3 text-base">
+			<a href="/" class="group">
+				<h2 class="font-semibold tracking-tighter p-2 font-mplus text-lg flex items-center gap-1">
+					<img src="/favicon.svg" alt="R" width="30" height="30">
+					Romer Alvarez
+				</h2>
+			</a>
+			<div class="items-center gap-6 hidden md:flex">
+				<HeaderLink href="/">Home</HeaderLink>
+				<HeaderLink href="/blog">Blog</HeaderLink>
+				<HeaderLink href="/about">About</HeaderLink>
+				<HeaderLink href="https://twitter.com/astrodotbuild" target="_blank">Twitter</HeaderLink>
+				<HeaderLink href="https://github.com/RomerEnr"target="_blank"> <IoLogoGithub/>Source</HeaderLink>
+			</div>
+			<div class="flex-1"></div>
+			<ThemeToggleButton client:load/>
+		</nav>
+	</div>
+</header>
