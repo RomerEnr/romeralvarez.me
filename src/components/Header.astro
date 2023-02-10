@@ -1,7 +1,8 @@
 ---
 import HeaderLink from './HeaderLink.astro';
 import { IoLogoGithub } from "react-icons/io5/index.js";
-import { ThemeToggleButton } from './ThemeToggleButton.tsx';
+import { ThemeToggleButton } from './ThemeToggleButton';
+import { Favicon } from './Favicon';
 ---
 
 <header class="fixed w-full p-2 z-20 backdrop-blur-md">
@@ -9,7 +10,7 @@ import { ThemeToggleButton } from './ThemeToggleButton.tsx';
 		<nav class="flex item-center gap-3 text-base">
 			<a href="/" class="group">
 				<h2 class="font-semibold tracking-tighter p-2 font-mplus text-lg flex items-center gap-1">
-					<img src="/favicon.svg" alt="R" width="30" height="30">
+					<Favicon />
 					Romer Alvarez
 				</h2>
 			</a>
