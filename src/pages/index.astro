@@ -5,6 +5,7 @@ import Footer from '@components/Footer.astro';
 import Body from '@components/Body.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import Content from '@components/Content.astro';
+import Masthead from '@components/Masthead.astro';
 ---
 
 <!DOCTYPE html>
@@ -14,12 +15,11 @@ import Content from '@components/Content.astro';
 	</head>
 	<Body>
 		<Header title={SITE_TITLE} />
-		<main class="pt-[56px]">
-			<h1 class="font-mplus text-center">{SITE_TITLE}</h1>
-
-			<Content>
-				<section>
-					<p class="mb-8 indent-4">Content</p>
+		<main class="pt-20">
+			<Content classname={"max-w-4xl"}>
+				<section class="dark:bg-zinc-600 pt-5 rounded-md">
+					<h1 class="font-mplus text-center text-2xl">{SITE_TITLE}</h1>
+					<Masthead />	
 				</section>
 			</Content>
 		</main>
