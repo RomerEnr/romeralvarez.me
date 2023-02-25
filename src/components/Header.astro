@@ -3,6 +3,7 @@ import HeaderLink from './HeaderLink.astro';
 import { IoLogoGithub } from "react-icons/io5/index.js";
 import { ThemeToggleButton } from './ThemeToggleButton';
 import { Favicon } from './Favicon';
+import { SITE_URL } from 'src/consts';
 ---
 
 <header class="fixed w-full p-2 z-20 backdrop-blur-md">
@@ -15,7 +16,7 @@ import { Favicon } from './Favicon';
 				</h2>
 			</a>
 			<div class="items-center gap-6 hidden md:flex">
-				<HeaderLink href="/">Home</HeaderLink>
+				<HeaderLink href={SITE_URL}>Home</HeaderLink>
 				<HeaderLink href="/blog">Blog</HeaderLink>
 				<HeaderLink href="https://github.com/RomerEnr/romeralvarez.me"target="_blank"> <IoLogoGithub/>Source</HeaderLink>
 			</div>

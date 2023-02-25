@@ -3,4 +3,4 @@
 
 export const SITE_TITLE = "Desarrollador Fullstack - Romer Álvarez";
 export const SITE_DESCRIPTION = "Desarrollador Fullstack junior - Un ser humano de las Islas Canarias enamorado del código y la administración de sistemas.";
-export const SITE_URL = "https://romeralvarez.com";
+export const SITE_URL = "https://romeralvarez.me";
