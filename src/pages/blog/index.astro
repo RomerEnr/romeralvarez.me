@@ -6,7 +6,7 @@ import Content from '@components/Content.astro';
 import Body from '@components/Body.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { collections } from 'src/content/config';
-import CategoryCard from '@components/CategoryCard.astro';
+import { Image } from "@astrojs/image/components";
 ---
 
 <!DOCTYPE html>
@@ -27,12 +27,13 @@ import CategoryCard from '@components/CategoryCard.astro';
 							return (
 								<li class="text-center mb-4">
 									<a href={`/blog/${collection}`}>
-										<img
+										<Image
 											class="border border-slate-300 dark:border-zinc-700 rounded-xl"	
 											src={`../${collection}.jpg`}
-											alt={formattedCollection}
 											width={720*2}
-											height={480*2}
+											height={525}	
+											aspectRatio={2.0}
+											alt={formattedCollection}
 										/>
 									</a>
 									<div class="mt-3 text-xl font-bold">{formattedCollection}</div>
@@ -43,8 +44,6 @@ import CategoryCard from '@components/CategoryCard.astro';
 				</ul>
 
 			</Content>
-			
-			<img src="../python.jpg" alt="" width="750" height="750">
 
 			<!-- <Content>
 				<section>
