@@ -21,31 +21,25 @@ import CategoryCard from '@components/CategoryCard.astro';
 			<Content>
 				<ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-					<CategoryCard
-						title="Python"
-						image="python"
-				  />
-
-					<!-- {
+					{
 						Object.keys(collections).map((collection) => {
 							const formattedCollection = collection[0].toUpperCase() + collection.slice(1);
 							return (
 								<li class="text-center mb-4">
 									<a href={`/blog/${collection}`}>
-										<Image
+										<img
 											class="border border-slate-300 dark:border-zinc-700 rounded-xl"	
 											src={`img/${collection}.jpg`}
 											alt={formattedCollection}
 											width={720*2}
-											height={400}
-											aspectRatio={2.0}
+											height={480*2}
 										/>
 									</a>
 									<div class="mt-3 text-xl font-bold">{formattedCollection}</div>
 								</li>
 							);
 						})	
-					}	 -->
+					}	
 				</ul>
 
 			</Content>
