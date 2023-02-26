@@ -6,7 +6,7 @@ import Content from '@components/Content.astro';
 import Body from '@components/Body.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { collections } from 'src/content/config';
-import { Image } from "@astrojs/image/components";
+import CategoryCard from '@components/CategoryCard.astro';
 ---
 
 <!DOCTYPE html>
@@ -20,7 +20,13 @@ import { Image } from "@astrojs/image/components";
 			
 			<Content>
 				<ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					{
+
+					<CategoryCard
+						title="Python"
+						image="python"
+				  />
+
+					<!-- {
 						Object.keys(collections).map((collection) => {
 							const formattedCollection = collection[0].toUpperCase() + collection.slice(1);
 							return (
@@ -39,7 +45,7 @@ import { Image } from "@astrojs/image/components";
 								</li>
 							);
 						})	
-					}	
+					}	 -->
 				</ul>
 
 			</Content>

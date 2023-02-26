@@ -1,0 +1,22 @@
+---
+export interface Props {
+	title: string;
+	image: string;
+}
+
+const { title, image } = Astro.props;
+import { Image } from "@astrojs/image/components";
+---
+
+<li>
+	<a href={`/blog/${title}`}>
+		<Image 
+		src={`${image}.jpg`}
+		alt={title}
+		width={720*2}
+		height={400}
+		aspectRatio={2.0}
+		/>
+	</a>
+	<div></div>
+</li>
