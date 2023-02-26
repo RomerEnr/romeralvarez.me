@@ -27,12 +27,11 @@ import { Image } from "@astrojs/image/components";
 							return (
 								<li class="text-center mb-4">
 									<a href={`/blog/${collection}`}>
-										<Image
+										<img
 											class="border border-slate-300 dark:border-zinc-700 rounded-xl"	
 											src={`../python.jpg`}
 											width={720*2}
 											height={526}	
-											aspectRatio={2.0}
 											alt={formattedCollection}
 										/>
 									</a>
