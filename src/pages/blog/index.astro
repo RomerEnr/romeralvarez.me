@@ -6,7 +6,6 @@ import Content from '@components/Content.astro';
 import Body from '@components/Body.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { collections } from 'src/content/config';
-import { Image } from "@astrojs/image/components";
 ---
 
 <!DOCTYPE html>
@@ -29,9 +28,9 @@ import { Image } from "@astrojs/image/components";
 									<a href={`/blog/${collection}`}>
 										<img
 											class="border border-slate-300 dark:border-zinc-700 rounded-xl"	
-											src={`../python.jpg`}
+											src={`../${collection}.webp`}
 											width={720*2}
-											height={526}	
+											height={525}	
 											alt={formattedCollection}
 										/>
 									</a>
