@@ -1,6 +1,6 @@
 {
-  "name": "test",
-  "version": "2.1.0",
+  "name": "romeralvarez.me",
+  "version": "1.0.0",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
