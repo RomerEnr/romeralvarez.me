@@ -3,15 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@components/*": [
-        "src/components/*"
-      ],
-      "@layouts/*": [
-        "src/layouts/*"
-      ]
-    },
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    "types": ["@astrojs/image/client"]
+      "@*": ["./src/*"]
+    }
   }
 }

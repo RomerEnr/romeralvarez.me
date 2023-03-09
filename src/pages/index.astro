@@ -1,36 +1,132 @@
 ---
-import BaseHead from '@components/BaseHead.astro';
-import Header from '@components/Header.astro';
-import Footer from '@components/Footer.astro';
-import Body from '@components/Body.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
-import Content from '@components/Content.astro';
-import Masthead from '@components/Masthead.astro';
+import { getCollection } from "astro:content";
+import Layout from "@layouts/Layout.astro";
+import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
+import LinkButton from "@components/LinkButton.astro";
+import Hr from "@components/Hr.astro";
+import Card from "@components/Card";
+import Socials from "@components/Socials.astro";
+import getSortedPosts from "@utils/getSortedPosts";
+import slugify from "@utils/slugify";
+import { SOCIALS } from "@config";
+
+const posts = await getCollection("blog");
+
+const sortedPosts = getSortedPosts(posts);
+const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
+
+const socialCount = SOCIALS.filter(social => social.active).length;
 ---
 
-<!DOCTYPE html>
-<html lang="es">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<Body>
-		<Header title={SITE_TITLE} />
-		<main class="pt-20">
-			<Content classname={"max-w-4xl"}>
-				<section class="pt-5 rounded-md">
-					<h1 class="font-mplus text-center text-2xl">{SITE_TITLE}</h1>
-					<Masthead />	
-				</section>
-			</Content>
+<Layout>
+  <Header />
+  <main id="main-content">
+    <section id="hero">
+      <h1>Romer Alvarez</h1>
+      <p>
+        Estudiante de administración de sistemas y entusiasta de la programación, localizado en las Islas Canarias (Tenerife, España). Me encanta trabajar con la premisa de implementar código sostenible y trabajar bajo la filosofía DevOps.
+      </p>
+      
+      {
+        // only display if at least one social link is enabled
+        socialCount > 0 && (
+          <div class="social-wrapper">
+            <div class="social-links">Redes sociales:</div>
+            <Socials />
+          </div>
+        )
+      }
+    </section>
 
-			<Content classname={"max-w-4xl"}>
-				<section class="pt-5 rounded-md">
-					<h2 class="font-mplus text-center text-2xl">¿Por qué la existencia de este proyecto?</h2>
-					<p class="text-center">Este proyecto está destinado a ser utilizado como un blog estudiantil y portafolio donde podrás encontrar mis proyectos más relevantes y donde voy a escribir acerca de las tecnologías y mis clases como administrador de sistemas y desarrollador.</p>
-				</section>
-			</Content>
-		</main>
-		
-		<Footer />
-	</Body>
-</html>
+    <Hr />
+
+    {
+      featuredPosts.length > 0 && (
+        <>
+          <section id="featured">
+            <h2>Destacados</h2>
+            <ul>
+              {featuredPosts.map(({ data }) => (
+                <Card
+                  href={`/blog/${slugify(data)}`}
+                  frontmatter={data}
+                  secHeading={false}
+                />
+              ))}
+            </ul>
+          </section>
+          <Hr />
+        </>
+      )
+    }
+
+    <section id="recent-posts">
+      <h2>Últimos posts</h2>
+      <ul>
+        {
+          sortedPosts.map(
+            ({ data }, index) =>
+              index < 4 && (
+                <Card
+                  href={`/blog/${slugify(data)}`}
+                  frontmatter={data}
+                  secHeading={false}
+                />
+              )
+          )
+        }
+      </ul>
+      <div class="all-posts-btn-wrapper">
+        <LinkButton href="/blog">
+          All Posts
+          <svg xmlns="http://www.w3.org/2000/svg"
+            ><path
+              d="m11.293 17.293 1.414 1.414L19.414 12l-6.707-6.707-1.414 1.414L15.586 11H6v2h9.586z"
+            ></path>
+          </svg>
+        </LinkButton>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* ===== Hero Section ===== */
+  #hero {
+    @apply pt-8 pb-6;
+  }
+  #hero h1 {
+    @apply my-4 inline-block text-3xl font-bold sm:my-8 sm:text-5xl;
+  }
+  #hero .rss-link {
+    @apply mb-6;
+  }
+  #hero .rss-icon {
+    @apply mb-2 h-6 w-6 scale-110 fill-skin-accent sm:mb-3 sm:scale-125;
+  }
+  #hero p {
+    @apply my-2;
+  }
+  .social-wrapper {
+    @apply mt-4 flex flex-col sm:flex-row sm:items-center;
+  }
+  .social-links {
+    @apply mr-2 mb-1 whitespace-nowrap sm:mb-0;
+  }
+
+  /* ===== Featured & Recent Posts Sections ===== */
+  #featured,
+  #recent-posts {
+    @apply pt-12 pb-6;
+  }
+  #featured h2,
+  #recent-posts h2 {
+    @apply text-2xl font-semibold tracking-wide;
+  }
+  .all-posts-btn-wrapper {
+    @apply my-8 text-center;
+  }
+</style>

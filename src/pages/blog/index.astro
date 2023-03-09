@@ -1,70 +1,18 @@
 ---
-import BaseHead from '@components/BaseHead.astro';
-import Header from '@components/Header.astro';
-import Footer from '@components/Footer.astro';
-import Content from '@components/Content.astro';
-import Body from '@components/Body.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
-import { collections } from 'src/content/config';
+import { SITE } from "@config";
+import Posts from "@layouts/Posts.astro";
+import getSortedPosts from "@utils/getSortedPosts";
+import getPageNumbers from "@utils/getPageNumbers";
+
+import { getCollection } from "astro:content";
+
+const posts = await getCollection("blog");
+
+const sortedPosts = getSortedPosts(posts);
+
+const totalPages = getPageNumbers(sortedPosts.length);
+
+const paginatedPosts = sortedPosts.slice(0, SITE.postPerPage);
 ---
 
-<!DOCTYPE html>
-<html lang="es">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<Body>
-		<Header />
-		<main class="pt-20">
-			
-			<Content>
-				<ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-					{
-						Object.keys(collections).map((collection) => {
-							const formattedCollection = collection[0].toUpperCase() + collection.slice(1);
-							return (
-								<li class="text-center mb-4">
-									<a href={`/blog/${collection}`}>
-										<img
-											class="border border-slate-300 dark:border-zinc-700 rounded-xl"	
-											src={`../${collection}.webp`}
-											width={720*2}
-											height={525}	
-											alt={formattedCollection}
-										/>
-									</a>
-									<div class="mt-3 text-xl font-bold">{formattedCollection}</div>
-								</li>
-							);
-						})	
-					}	
-				</ul>
-
-			</Content>
-
-			<!-- <Content>
-				<section>
-					<ul>
-						{
-							posts.map((post) => (
-								<li>
-
-									<time datetime={post.data.pubDate.toISOString()}>
-										{post.data.pubDate.toLocaleDateString('en-us', {
-											year: 'numeric',
-											month: 'short',
-											day: 'numeric',
-										})}
-									</time>
-									<a href={`/blog/${post.slug}/`}>{post.data.title}</a>
-								</li>
-							))
-						}
-					</ul>
-				</section>
-			</Content> -->
-		</main>
-		<Footer />
-	</Body>
-</html>
+<Posts posts={paginatedPosts} pageNum={1} totalPages={totalPages.length} />
