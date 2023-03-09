@@ -1,11 +1,8 @@
 ---
-import { LOGO_IMAGE, SITE } from "@config";
+import { SITE } from "@config";
 import { Favicon } from "./Favicon";
 import Hr from "./Hr.astro";
 import LinkButton from "./LinkButton.astro";
-
-import logoPNG from "/assets/logo.png";
-import logoSVG from "/assets/logo.svg";
 
 export interface Props {
   activeNav?: "posts" | "tags" | "about" | "search";
@@ -19,7 +16,7 @@ const { activeNav } = Astro.props;
   <div class="nav-container">
     <div class="top-nav-wrap">
       <a href="/" class="logo">
-        <Favicon/>
+        <Favicon />
       </a>
       <nav id="nav-menu">
         <button
