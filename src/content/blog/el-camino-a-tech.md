@@ -7,7 +7,7 @@ featured: false
 draft: false
 tags:
   - romer
-ogImage: ""
+ogImage: https://img.freepik.com/foto-gratis/foto-panoramica-camino-tierra-medio-campo-silueta-montanas-al-atardecer_181624-16609.jpg
 description: El camino al sector Tech puede ser doloroso, puede ser desafiante pero es algo muy bonito, donde cada hora de estudio vale la pena. En esta entrada haré un resumen de como empezó mi trayectoria en este sector.
 ---
 
