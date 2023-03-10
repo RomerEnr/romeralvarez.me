@@ -1,6 +1,6 @@
 ---
 title: Presentación del blog
-author: Romer
+author: Romer Alvarez
 pubDatetime: 2023-03-09
 postSlug: Primera entrada al blog
 featured: false
