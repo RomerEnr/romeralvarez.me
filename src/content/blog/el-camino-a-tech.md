@@ -3,7 +3,7 @@ title: El camino a mi primer empleo en el sector Tech
 author: Romer Alvarez
 pubDatetime: 2023-03-10T21:15:00Z
 postSlug: El camino a mi primer empleo en el sector Tech
-featured: false
+featured: true
 draft: false
 tags:
   - romer
