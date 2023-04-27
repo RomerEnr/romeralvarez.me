@@ -9,7 +9,7 @@ import Card from "@components/Card";
 import Socials from "@components/Socials.astro";
 import getSortedPosts from "@utils/getSortedPosts";
 import slugify from "@utils/slugify";
-import { SOCIALS } from "@config";
+import { COMPANY, SOCIALS } from "@config";
 
 const posts = await getCollection("blog");
 
@@ -27,8 +27,12 @@ const socialCount = SOCIALS.filter(social => social.active).length;
       <p>
         Estudiante de administración de sistemas y entusiasta de la
         programación, localizado en las Islas Canarias (Tenerife, España). Me
-        encanta trabajar con la premisa de implementar código sostenible y
+        encanta trabajar con la premisa de implementar código sostenible, buenas prácticas y
         trabajar bajo la filosofía DevOps.
+      </p>
+
+      <p>
+        - Actualmente trabajando en: <a target="_blank" href="https://www.pwc.es/">{COMPANY}</a>
       </p>
 
       {

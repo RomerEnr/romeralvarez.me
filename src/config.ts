@@ -133,3 +133,5 @@ export const SOCIALS: SocialObjects = [
     active: false,
   },
 ];
+
+export const COMPANY = "PWC"
