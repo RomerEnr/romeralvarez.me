@@ -9,7 +9,7 @@ tags:
   - java
   - manejo de excepciones
 ogImage: https://cdn.midjourney.com/41860511-839e-45c8-8cd2-2d81accc7e39/0_3.png
-description: Daremos una introducción al manejo de excepciones en Java, explora las ventajas y características de las excepciones, cómo utilizar bloques try-catch-finally, separar la lógica de manejo de errores, y garantizar una ejecución fluida incluso frente a imprevistos. 
+description: Aprende a dominar las excepciones chequeadas y no chequeadas en Java en este artículo detallado. Descubre las diferencias clave entre ambas, cuándo y cómo usarlas, y las mejores prácticas para un manejo de errores eficiente. Optimiza tu código Java y mejora la robustez de tus aplicaciones con un enfoque sólido en el manejo de excepciones chequeadas y no chequeadas.
 ---
 
 # Excepciones chequeadas y no chequeadas  
