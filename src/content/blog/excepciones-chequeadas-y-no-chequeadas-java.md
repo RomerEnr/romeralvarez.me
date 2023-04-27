@@ -17,7 +17,7 @@ Como hablamos en el [anterior post](https://romeralvarez.me/blog/introduccion-al
 
 Y dentro de estos mecanismos, Java nos ofrece dos tipo de excepciones, unas son capturadas en tiempo de compilación y otras son capturadas en tiempo de ejecución donde todo parte de la clase `Exception`.
 
-![diagrama de excepciones chequeadas y no chequeadas](/public/assets/manejo-de-excepciones-assets/excepciones-chequeadas-no-chequeadas.png)  
+![diagrama de excepciones chequeadas y no chequeadas](/assets/manejo-de-excepciones-assets/excepciones-chequeadas-no-chequeadas.png)  
 
 ## Excepciones chequeadas  
 Son aquellas que el compilador de Java verifica durante la compilación y requiere que sean manejadas con el `try/catch` o lanzandola en un método, es decir propagar la excepción a los otros métodos que están llamando ese método. Un ejemplo de excepción chequeada:  
