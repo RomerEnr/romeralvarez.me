@@ -70,4 +70,4 @@ Para concluir, a la hora de desarrollar aplicaciones que son puestas en producci
 
 Para más información sobre Keycloak, puedes visitar su [sitio web](https://www.keycloak.org/). 
 
-Y también puedes ver el siguiente ejemplo de como [implementar Keycloak](https://github.com/RomerEnr/spring-example-keycloak) en una aplicación web con Spring Boot. Donde futuramente habrá un articulo explicandolo
+Y también puedes ver el siguiente ejemplo de como [implementar Keycloak](https://github.com/RomerEnr/spring-example-keycloak) en una aplicación web con Spring Boot. Donde futuramente habrá un articulo explicandolo.
