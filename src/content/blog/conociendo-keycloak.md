@@ -66,4 +66,8 @@ Desarrollar un sistema de autenticación desde cero es un desafío considerable 
 * **Mantenimiento y actualizaciones:** Los estándares y prácticas de seguridad evolucionan. Mantener un sistema propio significa actualizarlo regularmente, lo que consume tiempo y recursos.
 * **Interoperabilidad:** Keycloak, al seguir estándares reconocidos, garantiza que pueda interactuar con otras herramientas y servicios sin problemas.  
 
-Para concluir, a la hora de desarrollar aplicaciones que son puestas en producción es necesario contar con un sistema de **autenticación y autorización robusto y seguro.** No veo una razón para no utilizar un sistema así dado que **Keycloak es Open Source y gratuito.** Por otro lado, un servicio como **Keycloak** nos permite ahorrar tiempo y delegar la seguridad a un sistema que se dedica a eso y poder enfocarnos en el desarrollo de la lógica de negocio.
+Para concluir, a la hora de desarrollar aplicaciones que son puestas en producción es necesario contar con un sistema de **autenticación y autorización robusto y seguro.** No veo una razón para no utilizar un sistema así dado que **Keycloak es Open Source y gratuito.** Por otro lado, un servicio como **Keycloak** nos permite ahorrar tiempo y delegar la seguridad a un sistema que se dedica a eso y poder enfocarnos en el desarrollo de la lógica de negocio.  
+
+Para más información sobre Keycloak, puedes visitar su [sitio web](https://www.keycloak.org/). 
+
+Y también puedes ver el siguiente ejemplo de como [implementar Keycloak](https://github.com/RomerEnr/spring-example-keycloak) en una aplicación web con Spring Boot. Donde futuramente habrá un articulo explicandolo
