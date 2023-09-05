@@ -14,7 +14,7 @@ description: Esta entrada trata de una bienvenida a mi blog donde trabajaré y e
 # Bienvenida
 
 Esta entrada trata de una bienvenida a mi blog donde trabajaré y escribiré acerca de mis cosas en el futuro. Y daré una breve introducción de quien soy.  
-Soy Romer, un desarrollador Fullstack y estudiante de Administración de sistemas en el [IES Puerto de la cruz](https://iespuertodelacruz.es/) localizado en las Islas Canarias (Tenerife, España). Me encanta trabajar con la premisa de implementar código sostenible y trabajar bajo la filosofía DevOps.
+Soy Romer, un desarrollador Fullstack y titulado de en Administración de sistemas en el [IES Puerto de la cruz](https://iespuertodelacruz.es/) localizado en las Islas Canarias (Tenerife, España). Me encanta trabajar con la premisa de implementar código sostenible y trabajar bajo la filosofía DevOps.
 
 ## ¿Como nace este blog?
 
