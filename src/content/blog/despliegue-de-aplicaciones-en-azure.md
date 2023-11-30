@@ -330,7 +330,7 @@ spec:
     port: 80
   selector:
     app: hellofromdotnet
-´´´
+```
 
 3. Reemplazaremos `ACR_NAME` con el nombre de nuestro Azure Container Registry (ACR) y ejecutaremos el siguiente comando para desplegar la imagen de Linux:
 
@@ -378,7 +378,23 @@ kubectl get services -n dev-dotnet
 
 Y finalmente, podremos ver que tenemos los pods y los servicios creados correctamente:
 
-![AKS Pods](/assets/Azure/aks-verification.png)
+```bash
+romer [ ~ ]$ kubectl get pods -n dev-node
+NAME                                READY   STATUS    RESTARTS   AGE
+hellofromnode-deployment-65bb76d95f-8wp4c   1/1     Running   0          4m41s
+
+romer [ ~ ]$ kubectl get pods -n dev-dotnet
+NAME                                 READY   STATUS    RESTARTS   AGE
+hellofromdotnet-deployment-66445d8f4-jwtv7   1/1     Running   0          4m39s
+
+romer [ ~ ]$ kubectl get services -n dev-dotnet
+NAME                           TYPE           CLUSTER-IP      EXTERNAL-IP       PORT(S)          AGE
+hellofromdotnet-service        LoadBalancer   172.16.0.112    4.175.193.225     80:30614/TCP     4m44s
+
+romer [ ~ ]$ kubectl get services -n dev-node
+NAME                         TYPE           CLUSTER-IP      EXTERNAL-IP       PORT(S)          AGE
+hellofromnode-service        LoadBalancer   172.16.3.220    4.175.193.210     80:32568/TCP     4m53s
+```
 
 ## Ejercicio 4: Eliminar todos los recursos
 
