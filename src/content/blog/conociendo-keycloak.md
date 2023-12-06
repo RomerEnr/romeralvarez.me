@@ -3,7 +3,7 @@ title: Conociendo Keycloak - Un sistema de autenticación y autorización seguro
 author: Romer Alvarez
 pubDatetime: 2023-08-12T14:00:00Z
 postSlug: Conociendo-Keycloak
-featured: true
+featured: false
 draft: false
 tags:
   - Java
