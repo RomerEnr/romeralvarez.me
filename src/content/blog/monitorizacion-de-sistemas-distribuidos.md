@@ -54,7 +54,7 @@ La combinación de ambos enfoques es vital para una **estrategia de monitorizaci
 
 ## Las cuatro señales doradas
 
-Google expone en su libro [Site Reliability Engineering](https://landing.google.com/sre/sre-book/toc/) **las cuatro señales dorada*s* para monitorizar y **recomienda centrarse en los siguientes cuatro parametros**:
+Google expone en su libro [Site Reliability Engineering](https://landing.google.com/sre/sre-book/toc/) **las cuatro señales doradas** para monitorizar y **recomienda centrarse en los siguientes cuatro parametros**:
 
 ### Latencia
 
