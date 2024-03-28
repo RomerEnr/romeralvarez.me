@@ -8,6 +8,7 @@ draft: false
 tags:
   - Cloud
   - DevOps
+  - sistemas-distribuidos
 ogImage: /assets/Azure/monitoring-distribuited-systems.png
 description: Descubre estrategias de los expertos SRE de Google para la monitorización eficiente de sistemas distribuidos, abarcando desde la importancia del monitoreo de caja blanca y negra hasta las cuatro señales doradas de la infraestructura en la nube.
 ---
