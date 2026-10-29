@@ -1,0 +1,883 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Conociendo Keycloak - Revisando, refactorizando y actualizando la implementación. · Romer Alvarez</title><meta name="description" content="Revisión y refactorización de Keycloak; actualizando nuestra implementación en Spring Boot para seguir (o intentar) las buenas prácticas de programación."><link rel="canonical" href="https://romeralvarez.me/es/blog/refactorizando-keycloak/"><link rel="alternate" hreflang="es" href="https://romeralvarez.me/es/blog/refactorizando-keycloak/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="Romer Alvarez · Blog" href="/rss.xml"><meta name="theme-color" content="#f2f3f5"><meta property="og:type" content="article"><meta property="og:title" content="Conociendo Keycloak - Revisando, refactorizando y actualizando la implementación. · Romer Alvarez"><meta property="og:description" content="Revisión y refactorización de Keycloak; actualizando nuestra implementación en Spring Boot para seguir (o intentar) las buenas prácticas de programación."><meta property="og:url" content="https://romeralvarez.me/es/blog/refactorizando-keycloak/"><meta property="og:locale" content="es_ES"><meta property="og:site_name" content="Romer Alvarez"><meta property="og:image" content="https://romeralvarez.me/assets/keycloak/keycloak-logo.png"><meta name="twitter:card" content="summary_large_image"><style>@font-face{font-family:"Funnel Display-12ca865bf053342f";src:url("/_astro/fonts/6d848bd7c4d66300.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"Funnel Display-12ca865bf053342f fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:normal;size-adjust:107.8583%;ascent-override:92.7142%;descent-override:23.1786%;line-gap-override:0%;}:root{--font-display:"Funnel Display-12ca865bf053342f","Funnel Display-12ca865bf053342f fallback: Arial",sans-serif;}</style><link rel="preload" href="/_astro/fonts/6d848bd7c4d66300.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/b0f574a27e2e8d39.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:400;font-style:italic;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/b0f574a27e2e8d39.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:italic;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/53c9791758e212af.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:400;font-style:normal;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/53c9791758e212af.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:400;font-style:italic;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:italic;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:400;font-style:normal;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:normal;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}:root{--font-sans:"Funnel Sans-3bd738e10bbce5f0","Funnel Sans-3bd738e10bbce5f0 fallback: Arial",sans-serif;}</style><style>@font-face{font-family:"Geist Mono-1c9b647e0ff632a6";src:url("/_astro/fonts/ba5d61c96960c427.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:italic;}@font-face{font-family:"Geist Mono-1c9b647e0ff632a6";src:url("/_astro/fonts/4885f00022c710c3.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"Geist Mono-1c9b647e0ff632a6 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:italic;size-adjust:134.5893%;ascent-override:74.6716%;descent-override:21.9185%;line-gap-override:0%;}@font-face{font-family:"Geist Mono-1c9b647e0ff632a6 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:normal;size-adjust:134.5893%;ascent-override:74.6716%;descent-override:21.9185%;line-gap-override:0%;}:root{--font-mono:"Geist Mono-1c9b647e0ff632a6","Geist Mono-1c9b647e0ff632a6 fallback: Arial",sans-serif;}</style><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Conociendo Keycloak - Revisando, refactorizando y actualizando la implementación.","description":"Revisión y refactorización de Keycloak; actualizando nuestra implementación en Spring Boot para seguir (o intentar) las buenas prácticas de programación.","datePublished":"2023-08-14T17:42:00.000Z","dateModified":"2023-08-14T17:42:00.000Z","inLanguage":"es","url":"https://romeralvarez.me/es/blog/refactorizando-keycloak/","image":"https://romeralvarez.me/assets/keycloak/keycloak-logo.png","author":{"@type":"Person","name":"Romer Alvarez","url":"https://romeralvarez.me"}}</script><link rel="stylesheet" href="/_astro/Base.DsERtDe_.css"><style>main[data-astro-cid-g5songws]{padding-block:48px 96px}.back[data-astro-cid-g5songws]{text-decoration:none}.back[data-astro-cid-g5songws]:hover{color:var(--pipeline-ink)}header[data-astro-cid-g5songws]{max-width:22ch;margin:40px 0 48px}header[data-astro-cid-g5songws] h1[data-astro-cid-g5songws]{max-width:none;margin-top:16px;font-size:clamp(40px,5.6vw,76px);line-height:1}header[data-astro-cid-g5songws]{max-width:900px}.tags[data-astro-cid-g5songws]{flex-wrap:wrap;gap:8px;margin:24px 0 0;padding:0;list-style:none;display:flex}.tags[data-astro-cid-g5songws] li[data-astro-cid-g5songws]{font:500 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--pipeline-soft);color:var(--pipeline-ink);border-radius:6px;padding:8px 10px}.prose[data-astro-cid-g5songws]{max-width:720px;font-size:18px;line-height:1.7}.prose[data-astro-cid-g5songws] h1,.prose[data-astro-cid-g5songws] h2,.prose[data-astro-cid-g5songws] h3,.prose[data-astro-cid-g5songws] h4{font-family:var(--display);letter-spacing:-.02em;margin:2em 0 .6em;font-weight:500;line-height:1.15}.prose[data-astro-cid-g5songws] h1,.prose[data-astro-cid-g5songws] h2{font-size:clamp(28px,3vw,36px)}.prose[data-astro-cid-g5songws] h3{font-size:24px}.prose[data-astro-cid-g5songws] h4{font-size:20px}.prose[data-astro-cid-g5songws] :is(h1,h2,h3,h4) strong{font-weight:inherit}.prose[data-astro-cid-g5songws]>:first-child{margin-top:0}.prose[data-astro-cid-g5songws] p,.prose[data-astro-cid-g5songws] ul,.prose[data-astro-cid-g5songws] ol{margin:0 0 1.2em}.prose[data-astro-cid-g5songws] li{margin:.3em 0}.prose[data-astro-cid-g5songws] a{color:var(--pipeline-ink);text-underline-offset:3px}.prose[data-astro-cid-g5songws] img{background:var(--surface);border-radius:12px;max-width:100%;height:auto;margin:2em auto;display:block}.prose[data-astro-cid-g5songws] blockquote{border-left:4px solid var(--pipeline);color:var(--ink-muted);margin:1.6em 0;padding:4px 0 4px 20px}.prose[data-astro-cid-g5songws] :not(pre)>code{font:500 .88em var(--mono);background:var(--surface);border-radius:6px;padding:2px 6px}.prose[data-astro-cid-g5songws] pre{font:500 14px/1.6 var(--mono);border:1px solid var(--line);border-radius:12px;margin:1.6em 0;padding:20px;overflow-x:auto}.prose[data-astro-cid-g5songws] table{border-collapse:collapse;width:100%;margin:1.6em 0;font-size:16px;display:block;overflow-x:auto}.prose[data-astro-cid-g5songws] th,.prose[data-astro-cid-g5songws] td{border-bottom:1px solid var(--line);text-align:left;padding:10px 12px}.prose[data-astro-cid-g5songws] hr{border:0;border-top:1px solid var(--line);margin:3em 0}
+</style></head><body><header data-astro-cid-nen7h5rs><div class="wrap" data-astro-cid-nen7h5rs><a class="brand" href="/es/" data-astro-cid-nen7h5rs>Romer Alvarez</a><nav class="actions" aria-label="Menú principal" data-astro-cid-nen7h5rs><div class="langs" role="group" aria-label="Idioma" data-astro-cid-nen7h5rs><a href="/" hreflang="en" lang="en" data-astro-cid-nen7h5rs>EN</a><a href="/it/" hreflang="it" lang="it" data-astro-cid-nen7h5rs>IT</a><a href="/es/blog/refactorizando-keycloak/" hreflang="es" lang="es" aria-current="true" data-astro-cid-nen7h5rs>ES</a></div><details class="menu" data-astro-cid-nen7h5rs><summary class="pill dark" data-astro-cid-nen7h5rs>Menú</summary><ul data-astro-cid-nen7h5rs><li data-astro-cid-nen7h5rs><a href="/es/#services" data-astro-cid-nen7h5rs>Qué hago</a></li><li data-astro-cid-nen7h5rs><a href="/es/#projects" data-astro-cid-nen7h5rs>Proyectos</a></li><li data-astro-cid-nen7h5rs><a href="/es/blog/" data-astro-cid-nen7h5rs>Blog</a></li><li data-astro-cid-nen7h5rs><a href="/es/#contact" data-astro-cid-nen7h5rs>Contacto</a></li></ul></details><a class="pill cta" href="/es/#contact" data-astro-cid-nen7h5rs>Hablemos</a></nav></div></header><script type="module">var e=document.querySelector(`details.menu`);document.addEventListener(`click`,t=>{e?.open&&(!e.contains(t.target)||t.target.closest(`a`))&&(e.open=!1)});</script><main class="wrap flowing" data-astro-cid-g5songws><a class="back label" href="/es/blog/" data-astro-cid-g5songws>← Todos los artículos</a><header data-astro-cid-g5songws><time class="label" datetime="2023-08-14T17:42:00.000Z" data-astro-cid-g5songws>14 de agosto de 2023</time><h1 data-astro-cid-g5songws>Conociendo Keycloak - Revisando, refactorizando y actualizando la implementación.</h1><ul class="tags" data-astro-cid-g5songws><li data-astro-cid-g5songws>Java</li><li data-astro-cid-g5songws>Keycloak</li><li data-astro-cid-g5songws>POO</li></ul></header><article class="prose" data-astro-cid-g5songws><h1 id="conociendo-keycloak---revisando-refactorizando-y-actualizando-la-implementación">Conociendo Keycloak - Revisando, refactorizando y actualizando la implementación.</h1>
+<p>¡Hola de nuevo! Si recuerdan, en mi <a href="https://romeralvarez.me/blog/conociendo-keycloak/">anterior post</a> nos metimos de lleno con Keycloak en Spring Boot. Sí, lo sé, la implementación fue un poco rápida y, admito, me salté los test unitarios. 😅 Pero, ¿quién no ha hecho eso alguna vez, cierto?</p>
+<p>Por lo tanto, en este post vamos a revisar y refactorizar el código para intentar seguir las buenas prácticas de programación y actualizar la implementación de nuestra pequeña app de Keycloak.</p>
+<h2 id="revisando-el-código">Revisando el código.</h2>
+<p>Primero, echemos un ojo a cómo se ve nuestro proyecto en este momento:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#005CC5">.</span></span>
+<span class="line"><span style="color:#6F42C1">├──</span><span style="color:#032F62"> HELP.md</span></span>
+<span class="line"><span style="color:#6F42C1">├──</span><span style="color:#032F62"> mvnw</span></span>
+<span class="line"><span style="color:#6F42C1">├──</span><span style="color:#032F62"> mvnw.cmd</span></span>
+<span class="line"><span style="color:#6F42C1">├──</span><span style="color:#032F62"> pom.xml</span></span>
+<span class="line"><span style="color:#6F42C1">└──</span><span style="color:#032F62"> src</span></span>
+<span class="line"><span style="color:#032F62">    ├──</span><span style="color:#032F62"> main</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> ├──</span><span style="color:#032F62"> java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62"> └──</span><span style="color:#032F62"> me</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">     └──</span><span style="color:#032F62"> romeralvarez</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">         └──</span><span style="color:#032F62"> springexamplekeycloak</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             ├──</span><span style="color:#032F62"> SpringExampleKeycloakApplication.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             ├──</span><span style="color:#032F62"> clients</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             │  </span><span style="color:#032F62"> └──</span><span style="color:#032F62"> KeycloakClient.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             ├──</span><span style="color:#032F62"> commons</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             │  </span><span style="color:#032F62"> └──</span><span style="color:#032F62"> Constants.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             ├──</span><span style="color:#032F62"> configuration</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             │  </span><span style="color:#032F62"> ├──</span><span style="color:#032F62"> JwtAuthenticationConverter.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             │  </span><span style="color:#032F62"> └──</span><span style="color:#032F62"> SecurityConfiguration.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             ├──</span><span style="color:#032F62"> controllers</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             │  </span><span style="color:#032F62"> ├──</span><span style="color:#032F62"> KeycloakAuthController.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             │  </span><span style="color:#032F62"> ├──</span><span style="color:#032F62"> KeycloakController.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             │  </span><span style="color:#032F62"> └──</span><span style="color:#032F62"> requests</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             │  </span><span style="color:#032F62">     ├──</span><span style="color:#032F62"> UserLoginRequest.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             │  </span><span style="color:#032F62">     └──</span><span style="color:#032F62"> UserRequest.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">             └──</span><span style="color:#032F62"> services</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">                 ├──</span><span style="color:#032F62"> KeycloakAuthServiceImpl.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">                 ├──</span><span style="color:#032F62"> KeycloakServiceImpl.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">                 └──</span><span style="color:#032F62"> interfaces</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">                     ├──</span><span style="color:#032F62"> KeycloakAuthService.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> │  </span><span style="color:#032F62">                     └──</span><span style="color:#032F62"> KeycloakService.java</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62"> └──</span><span style="color:#032F62"> resources</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62">     ├──</span><span style="color:#032F62"> application.yaml</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62">     ├──</span><span style="color:#032F62"> banner.txt</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62">     ├──</span><span style="color:#032F62"> static</span></span>
+<span class="line"><span style="color:#032F62">    │  </span><span style="color:#032F62">     └──</span><span style="color:#032F62"> templates</span></span>
+<span class="line"><span style="color:#032F62">    └──</span><span style="color:#032F62"> test</span></span>
+<span class="line"><span style="color:#032F62">        └──</span><span style="color:#032F62"> java</span></span>
+<span class="line"><span style="color:#032F62">            └──</span><span style="color:#032F62"> me</span></span>
+<span class="line"><span style="color:#032F62">                └──</span><span style="color:#032F62"> romeralvarez</span></span>
+<span class="line"><span style="color:#032F62">                    └──</span><span style="color:#032F62"> springexamplekeycloak</span></span>
+<span class="line"><span style="color:#032F62">                        └──</span><span style="color:#032F62"> SpringExampleKeycloakApplicationTests.java</span></span></code></pre>
+<ul>
+<li>Para empezar, tenemos un cambio muy sencillo, tenemos directorios que no necesitamos, como el directorio <code>static</code> y <code>templates</code> dentro de <code>resources</code>, ya que no vamos a utilizar plantillas ni nada por el estilo. Por lo tanto, vamos a eliminarlos.</li>
+<li>Otro cambio sencillo, vamos a cambiar el paquete <code>me.romeralvarez.springexamplekeycloak.controllers.requests</code>a un paquete de DTOs, por lo tanto, vamos a cambiar el nombre del paquete a <code>me.romeralvarez.springexamplekeycloak.dtos</code>.</li>
+</ul>
+<h2 id="constantsjava">Constants.java</h2>
+<p>En esta clase se manejan las constantes de la aplicación, sin embargo, tenemos credenciales, URLs y otros datos que no deberían estar en el código, por lo tanto, vamos a moverlos a un archivo de configuración.</p>
+<p>En nuestro caso vamos a mover las constantes a un archivo <code>application.yaml</code> en el directorio <code>resources</code>, pero lo ideal es tener un servicio de almacenamiento de secretos como <strong>Vault</strong> o <strong>AWS Secrets Manager</strong>.</p>
+<p>La decisión que tomaremos, será la de eliminar esta clase y mover las constantes a un archivo <code>application.yaml</code> en el directorio <code>resources</code>.</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#22863A">keycloak</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">  url</span><span style="color:#24292E">: </span><span style="color:#032F62">http://localhost:8080/</span></span>
+<span class="line"><span style="color:#22863A">  realm-name</span><span style="color:#24292E">: </span><span style="color:#032F62">spring-boot-realm-dev</span></span>
+<span class="line"><span style="color:#22863A">  realm-master</span><span style="color:#24292E">: </span><span style="color:#032F62">master</span></span>
+<span class="line"><span style="color:#22863A">  admin-cli</span><span style="color:#24292E">: </span><span style="color:#032F62">admin-cli</span></span>
+<span class="line"><span style="color:#22863A">  user-console</span><span style="color:#24292E">: </span><span style="color:#032F62">admin</span></span>
+<span class="line"><span style="color:#22863A">  user-password</span><span style="color:#24292E">: </span><span style="color:#032F62">admin</span></span>
+<span class="line"><span style="color:#22863A">  client-secret</span><span style="color:#24292E">: </span><span style="color:#032F62">DdWW14rqntQlMvr2AtgCZ1GD7kGSBWsw</span></span>
+<span class="line"><span style="color:#22863A">  client-id</span><span style="color:#24292E">: </span><span style="color:#032F62">spring-client-api-rest</span></span></code></pre>
+<h2 id="keycloakclientjava">KeycloakClient.java</h2>
+<p>Vamos a revisar el código de la clase <code>KeycloakClient.java</code>:</p>
+<p>La clase <code>KeycloakClient</code> actúa como un cliente que facilita la interacción con el servidor Keycloak;</p>
+<ul>
+<li>
+<p>Inicialización de la Instancia de <strong>Keycloak:</strong></p>
+<ul>
+<li>La clase tiene una instancia estática de Keycloak <strong>(keycloakInstance)</strong> que se inicializa utilizando el <strong>KeycloakBuilder</strong>.
+Esta instancia se configura con detalles como la <strong>URL del servidor Keycloak (KEYCLOAK_URL)</strong>, <strong>el reino (REALM_MASTER)</strong>, el <strong>ID del cliente (ADMIN_CLI)</strong>, el <strong>nombre de usuario (USER_CONSOLE)</strong>, la <strong>contraseña (USER_PASSWORD)</strong>, el <strong>secreto del cliente (CLIENT_SECRET)</strong>, y detalles adicionales relacionados con el cliente REST (resteasyClient).
+Obteniendo Recursos del Reino (RealmResource):</li>
+</ul>
+</li>
+<li>
+<p>El método <strong>getRealmResource()</strong> devuelve un recurso del realm que proporciona funcionalidad para administrar ese reino en particular dentro de <strong>Keycloak</strong>.</p>
+</li>
+<li>
+<p>Obteniendo Recursos de Usuarios <strong>(UsersResource):</strong> El método <code>getUsersResource()</code> devuelve un recurso que proporciona funcionalidades para administrar usuarios dentro de un realm específico.</p>
+</li>
+<li>
+<p>Creando una Instancia de <strong>KeycloakBuilder:</strong> <code>createKeycloakBuilder(String username, String password)</code> es un método que crea y devuelve una nueva instancia de <strong>KeycloakBuilder</strong> configurada con el username y password proporcionados.</p>
+</li>
+<li>
+<p>Obteniendo el <strong>Token de Acceso para un Usuario:</strong> <code>getAccessTokenForUser(String username, String password)</code> es un método que crea una nueva instancia de Keycloak utilizando <code>createKeycloakBuilder</code>, y luego solicita y devuelve un token de acceso para el usuario proporcionado.</p>
+</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> KeycloakClient</span><span style="color:#24292E"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> final</span><span style="color:#24292E"> Keycloak keycloakInstance </span><span style="color:#D73A49">=</span><span style="color:#24292E"> KeycloakBuilder.</span><span style="color:#6F42C1">builder</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">      .</span><span style="color:#6F42C1">serverUrl</span><span style="color:#24292E">(KEYCLOAK_URL)</span></span>
+<span class="line"><span style="color:#24292E">      .</span><span style="color:#6F42C1">realm</span><span style="color:#24292E">(REALM_MASTER)</span></span>
+<span class="line"><span style="color:#24292E">      .</span><span style="color:#6F42C1">clientId</span><span style="color:#24292E">(ADMIN_CLI)</span></span>
+<span class="line"><span style="color:#24292E">      .</span><span style="color:#6F42C1">username</span><span style="color:#24292E">(USER_CONSOLE)</span></span>
+<span class="line"><span style="color:#24292E">      .</span><span style="color:#6F42C1">password</span><span style="color:#24292E">(USER_PASSWORD)</span></span>
+<span class="line"><span style="color:#24292E">      .</span><span style="color:#6F42C1">clientSecret</span><span style="color:#24292E">(CLIENT_SECRET)</span></span>
+<span class="line"><span style="color:#24292E">      .</span><span style="color:#6F42C1">resteasyClient</span><span style="color:#24292E">(</span><span style="color:#D73A49">new</span><span style="color:#6F42C1"> ResteasyClientBuilderImpl</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">connectionPoolSize</span><span style="color:#24292E">(</span><span style="color:#005CC5">10</span><span style="color:#24292E">).</span><span style="color:#6F42C1">build</span><span style="color:#24292E">())</span></span>
+<span class="line"><span style="color:#24292E">      .</span><span style="color:#6F42C1">build</span><span style="color:#24292E">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#D73A49"> static</span><span style="color:#24292E"> RealmResource </span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> keycloakInstance.</span><span style="color:#6F42C1">realm</span><span style="color:#24292E">(REALM_NAME);</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#D73A49"> static</span><span style="color:#24292E"> UsersResource </span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#24292E">    RealmResource realmResource </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> getRealmResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> realmResource.</span><span style="color:#6F42C1">users</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#D73A49"> static</span><span style="color:#24292E"> KeycloakBuilder </span><span style="color:#6F42C1">createKeycloakBuilder</span><span style="color:#24292E">(String </span><span style="color:#E36209">username</span><span style="color:#24292E">, String </span><span style="color:#E36209">password</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> KeycloakBuilder.</span><span style="color:#6F42C1">builder</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">realm</span><span style="color:#24292E">(REALM_NAME)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">serverUrl</span><span style="color:#24292E">(KEYCLOAK_URL)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">clientId</span><span style="color:#24292E">(CLIENT_ID)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">clientSecret</span><span style="color:#24292E">(CLIENT_SECRET)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">username</span><span style="color:#24292E">(username)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">password</span><span style="color:#24292E">(password);</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#D73A49"> static</span><span style="color:#24292E"> AccessTokenResponse </span><span style="color:#6F42C1">getAccessTokenForUser</span><span style="color:#24292E">(String </span><span style="color:#E36209">username</span><span style="color:#24292E">, String </span><span style="color:#E36209">password</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#6F42C1"> createKeycloakBuilder</span><span style="color:#24292E">(username, password)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">build</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">tokenManager</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">getAccessToken</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ul>
+<li>En este caso, el primer cambio que haremos será el actualizar nuestro constructor y métodos que hacían uso de las constantes debido al cambio que hemos hecho previamente.</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">Component</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> KeycloakClient</span><span style="color:#24292E"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">   @</span><span style="color:#D73A49">Value</span><span style="color:#24292E">(</span><span style="color:#032F62">"${keycloak.url}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> String keycloakUrl;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Value</span><span style="color:#24292E">(</span><span style="color:#032F62">"${keycloak.realm-name}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> String realmName;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Value</span><span style="color:#24292E">(</span><span style="color:#032F62">"${keycloak.realm-master}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> String realmMaster;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Value</span><span style="color:#24292E">(</span><span style="color:#032F62">"${keycloak.admin-cli}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> String adminCli;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Value</span><span style="color:#24292E">(</span><span style="color:#032F62">"${keycloak.user-console}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> String userConsole;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Value</span><span style="color:#24292E">(</span><span style="color:#032F62">"${keycloak.user-password}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> String userPassword;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Value</span><span style="color:#24292E">(</span><span style="color:#032F62">"${keycloak.client-secret}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> String clientSecret;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Value</span><span style="color:#24292E">(</span><span style="color:#032F62">"${keycloak.client-id}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> String clientId;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> Keycloak keycloakInstance;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">PostConstruct</span></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> init</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#005CC5">    this</span><span style="color:#24292E">.keycloakInstance </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> createKeycloakInstance</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  protected</span><span style="color:#24292E"> Keycloak </span><span style="color:#6F42C1">createKeycloakInstance</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> KeycloakBuilder.</span><span style="color:#6F42C1">builder</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">serverUrl</span><span style="color:#24292E">(keycloakUrl)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">realm</span><span style="color:#24292E">(realmMaster)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">clientId</span><span style="color:#24292E">(adminCli)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">username</span><span style="color:#24292E">(userConsole)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">password</span><span style="color:#24292E">(userPassword)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">clientSecret</span><span style="color:#24292E">(clientSecret)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">resteasyClient</span><span style="color:#24292E">(</span><span style="color:#D73A49">new</span><span style="color:#6F42C1"> ResteasyClientBuilderImpl</span><span style="color:#24292E">().</span><span style="color:#6F42C1">connectionPoolSize</span><span style="color:#24292E">(</span><span style="color:#005CC5">10</span><span style="color:#24292E">).</span><span style="color:#6F42C1">build</span><span style="color:#24292E">())</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">build</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> RealmResource </span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> keycloakInstance.</span><span style="color:#6F42C1">realm</span><span style="color:#24292E">(realmName);</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> UsersResource </span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#24292E">    RealmResource realmResource </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> getRealmResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> realmResource.</span><span style="color:#6F42C1">users</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> KeycloakBuilder </span><span style="color:#6F42C1">createKeycloakBuilder</span><span style="color:#24292E">(String </span><span style="color:#E36209">username</span><span style="color:#24292E">, String </span><span style="color:#E36209">password</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> KeycloakBuilder.</span><span style="color:#6F42C1">builder</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">realm</span><span style="color:#24292E">(realmName)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">serverUrl</span><span style="color:#24292E">(keycloakUrl)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">clientId</span><span style="color:#24292E">(clientId)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">clientSecret</span><span style="color:#24292E">(clientSecret)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">username</span><span style="color:#24292E">(username)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">password</span><span style="color:#24292E">(password);</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> AccessTokenResponse </span><span style="color:#6F42C1">getAccessTokenForUser</span><span style="color:#24292E">(String </span><span style="color:#E36209">username</span><span style="color:#24292E">, String </span><span style="color:#E36209">password</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#6F42C1"> createKeycloakBuilder</span><span style="color:#24292E">(username, password)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">build</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">tokenManager</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">getAccessToken</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ul>
+<li>En primer lugar hemos <strong>implementado el uso de la anotación</strong> <code>@Value</code> para inyectar las propiedades de nuestro archivo de configuración.</li>
+<li>El otro cambio que hemos hecho es <strong>implementar la anotación</strong> <code>@PostConstruct</code> que marca el método que debe ser ejecutado después de que se haya realizado la inyección de dependencias. En otras palabras, una vez que <strong>Spring haya inyectado todos los valores (desde application.yml) en nuestros campos, se invocará el método</strong> <code>init()</code>. En este método, estamos inicializando nuestra instancia de Keycloak utilizando los valores de configuración inyectados.</li>
+<li>El primer antes de refactorizar es tener una buena bateria de test (cosa que no tenemos) por lo tanto, el paso previo es directamente hacer que el código sea testeable, por lo tanto hemos realizado los siguientes cambios:
+<ul>
+<li>Hemos extraido la lógica de la instancia de <code>Keycloak</code> a un nuevo método protegido: <code>createKeycloakInstance()</code>. La razón de este cambio es desacoplar la lógica de creación de la instancia de <code>Keycloak</code> del proceso de inicialización del bean. Con esto logramos varias cosas:
+<ul>
+<li><strong>Separación de responsabilidades:</strong> El método <code>init()</code> ahora solo se encarga de inicializar el bean, mientras que la lógica de creación de la instancia de <code>Keycloak</code> se ha movido a un método separado.</li>
+<li><strong>Mejora de la Testeabilidad:</strong> Al tener la creación en su propio método, podemos sobrescribir o “mockear” ese método específico en un contexto de prueba. Esto es especialmente útil cuando queremos evitar conexiones reales a servicios externos (como Keycloak) durante las pruebas unitarias.</li>
+</ul>
+</li>
+<li><strong>Hemos eliminado los métodos estáticos</strong> y los hemos convertido en <strong>métodos de instancia.</strong> Al no depender directamente de métodos estáticos para crear instancias y al poder inyectar o sobrescribir esas instancias, la clase se vuelve menos acoplada y más modular.</li>
+</ul>
+</li>
+</ul>
+<h2 id="keycloakserviceimpljava">KeycloakServiceImpl.java</h2>
+<ul>
+<li>Ahora que hemos refactorizado nuestra clase <code>KeycloakClient</code>, podemos refactorizar nuestra clase <code>KeycloakServiceImpl</code> para que utilice la nueva clase <code>KeycloakClient</code> en lugar de la instancia de <code>Keycloak</code> directamente.</li>
+</ul>
+<p>Daremos un vistazo a como estaba anteriormente la clase:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">Service</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">Slf4j</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> KeycloakServiceImpl</span><span style="color:#D73A49"> implements</span><span style="color:#6F42C1"> KeycloakService</span><span style="color:#24292E"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> List&lt;</span><span style="color:#D73A49">UserRepresentation</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">findAllUsers</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Finding all users"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Realm: {}"</span><span style="color:#24292E">, KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getRealm</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">users</span><span style="color:#24292E">().</span><span style="color:#6F42C1">list</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> List&lt;</span><span style="color:#D73A49">UserRepresentation</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">searchByUsername</span><span style="color:#24292E">(String </span><span style="color:#E36209">username</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">users</span><span style="color:#24292E">().</span><span style="color:#6F42C1">searchByUsername</span><span style="color:#24292E">(username, </span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> String </span><span style="color:#6F42C1">createUser</span><span style="color:#24292E">(@</span><span style="color:#D73A49">NonNull</span><span style="color:#24292E"> UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Creating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">    int</span><span style="color:#24292E"> status </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 0</span><span style="color:#24292E">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Realm: {}"</span><span style="color:#24292E">, KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getRealm</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    UsersResource usersResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> KeycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    UserRepresentation userRepresentation </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> UserRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Setting user attributes"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    userRepresentation.</span><span style="color:#6F42C1">setFirstName</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">firstName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    userRepresentation.</span><span style="color:#6F42C1">setLastName</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">lastName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    userRepresentation.</span><span style="color:#6F42C1">setEmail</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">email</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    userRepresentation.</span><span style="color:#6F42C1">setUsername</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">username</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    userRepresentation.</span><span style="color:#6F42C1">setEnabled</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    userRepresentation.</span><span style="color:#6F42C1">setEmailVerified</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    Response response </span><span style="color:#D73A49">=</span><span style="color:#24292E"> usersResource.</span><span style="color:#6F42C1">create</span><span style="color:#24292E">(userRepresentation);</span></span>
+<span class="line"><span style="color:#24292E">    status </span><span style="color:#D73A49">=</span><span style="color:#24292E"> response.</span><span style="color:#6F42C1">getStatus</span><span style="color:#24292E">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    if</span><span style="color:#24292E"> (status </span><span style="color:#D73A49">==</span><span style="color:#005CC5"> 201</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">      log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"User created"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">      String path </span><span style="color:#D73A49">=</span><span style="color:#24292E"> response.</span><span style="color:#6F42C1">getLocation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getPath</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">      String userId </span><span style="color:#D73A49">=</span><span style="color:#24292E"> path.</span><span style="color:#6F42C1">substring</span><span style="color:#24292E">(path.</span><span style="color:#6F42C1">lastIndexOf</span><span style="color:#24292E">(</span><span style="color:#032F62">'/'</span><span style="color:#24292E">) </span><span style="color:#D73A49">+</span><span style="color:#005CC5"> 1</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">      log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"User id: {}"</span><span style="color:#24292E">, userId);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">      log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Setting user password"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">      CredentialRepresentation credentialRepresentation </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> CredentialRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">      credentialRepresentation.</span><span style="color:#6F42C1">setTemporary</span><span style="color:#24292E">(</span><span style="color:#005CC5">false</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">      credentialRepresentation.</span><span style="color:#6F42C1">setType</span><span style="color:#24292E">(OAuth2Constants.PASSWORD);</span></span>
+<span class="line"><span style="color:#24292E">      credentialRepresentation.</span><span style="color:#6F42C1">setValue</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">password</span><span style="color:#24292E">());</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">      log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Resetting user password"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">      usersResource.</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId).</span><span style="color:#6F42C1">resetPassword</span><span style="color:#24292E">(credentialRepresentation);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">      log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Assigning user roles"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">      RealmResource realmResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">      List&lt;</span><span style="color:#D73A49">RoleRepresentation</span><span style="color:#24292E">&gt; roles </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> null</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">      </span></span>
+<span class="line"><span style="color:#D73A49">      if</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">() </span><span style="color:#D73A49">==</span><span style="color:#005CC5"> null</span><span style="color:#D73A49"> ||</span><span style="color:#24292E"> userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">isEmpty</span><span style="color:#24292E">()){</span></span>
+<span class="line"><span style="color:#24292E">        roles </span><span style="color:#D73A49">=</span><span style="color:#24292E"> List.</span><span style="color:#6F42C1">of</span><span style="color:#24292E">(realmResource.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(</span><span style="color:#032F62">"user"</span><span style="color:#24292E">).</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">      } </span><span style="color:#D73A49">else</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">        roles </span><span style="color:#D73A49">=</span><span style="color:#24292E"> realmResource</span></span>
+<span class="line"><span style="color:#24292E">            .</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">            .</span><span style="color:#6F42C1">list</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">            .</span><span style="color:#6F42C1">stream</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">            .</span><span style="color:#6F42C1">filter</span><span style="color:#24292E">(role </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">                .</span><span style="color:#6F42C1">stream</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">                .</span><span style="color:#6F42C1">anyMatch</span><span style="color:#24292E">(roleName </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> roleName.</span><span style="color:#6F42C1">equalsIgnoreCase</span><span style="color:#24292E">(role.</span><span style="color:#6F42C1">getName</span><span style="color:#24292E">())))</span></span>
+<span class="line"><span style="color:#24292E">            .</span><span style="color:#6F42C1">toList</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">      }</span></span>
+<span class="line"><span style="color:#24292E">      realmResource</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">users</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId)</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">realmLevel</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">add</span><span style="color:#24292E">(roles);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">      return</span><span style="color:#032F62"> "User created"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">    } </span><span style="color:#D73A49">else</span><span style="color:#D73A49"> if</span><span style="color:#24292E"> (status </span><span style="color:#D73A49">==</span><span style="color:#005CC5"> 409</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">      log.</span><span style="color:#6F42C1">error</span><span style="color:#24292E">(</span><span style="color:#032F62">"User already exists"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">      return</span><span style="color:#032F62"> "User already exists"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">    } </span><span style="color:#D73A49">else</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">      log.</span><span style="color:#6F42C1">error</span><span style="color:#24292E">(</span><span style="color:#032F62">"Error creating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">      return</span><span style="color:#032F62"> "Error creating user"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> deleteUser</span><span style="color:#24292E">(String </span><span style="color:#E36209">userId</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Deleting user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Realm: {}"</span><span style="color:#24292E">, KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getRealm</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    KeycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId).</span><span style="color:#6F42C1">remove</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> updateUser</span><span style="color:#24292E">(String </span><span style="color:#E36209">userId</span><span style="color:#24292E">, UserRequest </span><span style="color:#E36209">userRepresentation</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Updating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Realm: {}"</span><span style="color:#24292E">, KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getRealm</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    CredentialRepresentation credentialRepresentation </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> CredentialRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    credentialRepresentation.</span><span style="color:#6F42C1">setTemporary</span><span style="color:#24292E">(</span><span style="color:#005CC5">false</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    credentialRepresentation.</span><span style="color:#6F42C1">setType</span><span style="color:#24292E">(OAuth2Constants.PASSWORD);</span></span>
+<span class="line"><span style="color:#24292E">    credentialRepresentation.</span><span style="color:#6F42C1">setValue</span><span style="color:#24292E">(userRepresentation.</span><span style="color:#6F42C1">password</span><span style="color:#24292E">());</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    UserRepresentation user </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> UserRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    user.</span><span style="color:#6F42C1">setFirstName</span><span style="color:#24292E">(userRepresentation.</span><span style="color:#6F42C1">firstName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    user.</span><span style="color:#6F42C1">setLastName</span><span style="color:#24292E">(userRepresentation.</span><span style="color:#6F42C1">lastName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    user.</span><span style="color:#6F42C1">setEmail</span><span style="color:#24292E">(userRepresentation.</span><span style="color:#6F42C1">email</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    user.</span><span style="color:#6F42C1">setUsername</span><span style="color:#24292E">(userRepresentation.</span><span style="color:#6F42C1">username</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    user.</span><span style="color:#6F42C1">setEnabled</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    user.</span><span style="color:#6F42C1">setEmailVerified</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    user.</span><span style="color:#6F42C1">setCredentials</span><span style="color:#24292E">(Collections.</span><span style="color:#6F42C1">singletonList</span><span style="color:#24292E">(credentialRepresentation));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    UserResource userResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> KeycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId);</span></span>
+<span class="line"><span style="color:#24292E">    userResource.</span><span style="color:#6F42C1">update</span><span style="color:#24292E">(user);</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>Sin duda a simple vista se puede ver que hay mucho código repetido, métodos muy largos, números mágicos, <strong>code smells</strong>, etc. Vamos explicar un poco que sucede:</p>
+<ul>
+<li><strong>Métodos largos:</strong> Los métodos largos son un problema porque son difíciles de leer y de entender. Además, suelen ser un indicador de que la clase está haciendo demasiadas cosas. En este caso, los métodos <code>createUser()</code> y <code>updateUser()</code> son muy largos y hacen demasiadas cosas. Por ejemplo, el método <code>createUser()</code> hace lo siguiente:
+<ul>
+<li>Crea un usuario</li>
+<li>Le asigna una contraseña</li>
+<li>Le asigna roles</li>
+</ul>
+</li>
+<li><strong>Duplicación de código:</strong> La lógica para registrar el “realm” se repite en varios métodos (<code>findAllUsers</code>, <code>createUser</code>, <code>deleteUser</code>, <code>updateUser</code>).</li>
+<li><strong>Falta de abstracción:</strong> La lógica para crear una representación de usuario y credenciales se repite en <code>createUser</code> y <code>updateUser</code>. Esto podría abstraerse en métodos separados o incluso en una clase auxiliar.</li>
+<li><strong>Hace uso de una interfaz que realmente no aporta nada:</strong> Realmente, para este proyecto solo habrá una única implementación que será la de <strong>Keycloak</strong>, es un proyecto muy pequeño, y tampoco cambiaremos de proveedor de autenticación.</li>
+</ul>
+<p>Ahora, que hemos evaluado algunos de los problemas, vamos a refactorizar la clase:</p>
+<ul>
+<li>Primero vamos a eliminar la implementación de la interfaz y cambiar el nombre de la clase <code>KeycloakService</code></li>
+<li>Vamos a definir constantes para los códigos de estado HTTP</li>
+<li>Vamos a definir el <code>KeycloakClient</code> como un atributo de la clase</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> KeycloakService</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#D73A49"> final</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> int</span><span style="color:#24292E"> STATUS_CREATED </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 201</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#D73A49"> final</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> int</span><span style="color:#24292E"> STATUS_CONFLICT </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 409</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> KeycloakClient keycloakClient;</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>Ahora iremos método a método refactorizando:</p>
+<h3 id="findallusers">findAllUsers()</h3>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> List</span><span style="color:#D73A49">&lt;</span><span style="color:#24292E">UserRepresentation</span><span style="color:#D73A49">&gt;</span><span style="color:#6F42C1"> findAllUsers</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Finding all users"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Realm: {}"</span><span style="color:#24292E">, KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getRealm</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">users</span><span style="color:#24292E">().</span><span style="color:#6F42C1">list</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ul>
+<li>Lo único que cambiaremos acá será la línea 2, dado que se repite por todo el código, vamos a definir un método privado:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">private</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> logRealmInfo</span><span style="color:#24292E">(){</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Realm: {}"</span><span style="color:#24292E">, keycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getRealm</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ul>
+<li>Lo que haría que nuestra método quede de la siguiente manera:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> List</span><span style="color:#D73A49">&lt;</span><span style="color:#24292E">UserRepresentation</span><span style="color:#D73A49">&gt;</span><span style="color:#6F42C1"> findAllUsers</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Finding all users"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#6F42C1">  logRealmInfo</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">users</span><span style="color:#24292E">().</span><span style="color:#6F42C1">list</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<h3 id="createusernonnull-userrequest-userrequest">createUser(@NonNull UserRequest userRequest)</h3>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> String </span><span style="color:#6F42C1">createUser</span><span style="color:#24292E">(@</span><span style="color:#D73A49">NonNull</span><span style="color:#24292E"> UserRequest userRequest) {</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Creating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">  int</span><span style="color:#24292E"> status </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 0</span><span style="color:#24292E">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Realm: {}"</span><span style="color:#24292E">, KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getRealm</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  UsersResource usersResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> KeycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  UserRepresentation userRepresentation </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> UserRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Setting user attributes"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setFirstName</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">firstName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setLastName</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">lastName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setEmail</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">email</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setUsername</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">username</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setEnabled</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setEmailVerified</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  Response response </span><span style="color:#D73A49">=</span><span style="color:#24292E"> usersResource.</span><span style="color:#6F42C1">create</span><span style="color:#24292E">(userRepresentation);</span></span>
+<span class="line"><span style="color:#24292E">  status </span><span style="color:#D73A49">=</span><span style="color:#24292E"> response.</span><span style="color:#6F42C1">getStatus</span><span style="color:#24292E">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  if</span><span style="color:#24292E"> (status </span><span style="color:#D73A49">==</span><span style="color:#005CC5"> 201</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"User created"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    String path </span><span style="color:#D73A49">=</span><span style="color:#24292E"> response.</span><span style="color:#6F42C1">getLocation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getPath</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    String userId </span><span style="color:#D73A49">=</span><span style="color:#24292E"> path.</span><span style="color:#6F42C1">substring</span><span style="color:#24292E">(path.</span><span style="color:#6F42C1">lastIndexOf</span><span style="color:#24292E">(</span><span style="color:#032F62">'/'</span><span style="color:#24292E">) </span><span style="color:#D73A49">+</span><span style="color:#005CC5"> 1</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"User id: {}"</span><span style="color:#24292E">, userId);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Setting user password"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    CredentialRepresentation credentialRepresentation </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> CredentialRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    credentialRepresentation.</span><span style="color:#6F42C1">setTemporary</span><span style="color:#24292E">(</span><span style="color:#005CC5">false</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    credentialRepresentation.</span><span style="color:#6F42C1">setType</span><span style="color:#24292E">(OAuth2Constants.PASSWORD);</span></span>
+<span class="line"><span style="color:#24292E">    credentialRepresentation.</span><span style="color:#6F42C1">setValue</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">password</span><span style="color:#24292E">());</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Resetting user password"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    usersResource.</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId).</span><span style="color:#6F42C1">resetPassword</span><span style="color:#24292E">(credentialRepresentation);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Assigning user roles"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">    RealmResource realmResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    List&lt;</span><span style="color:#D73A49">RoleRepresentation</span><span style="color:#24292E">&gt; roles </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> null</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">    </span></span>
+<span class="line"><span style="color:#D73A49">    if</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">() </span><span style="color:#D73A49">==</span><span style="color:#005CC5"> null</span><span style="color:#D73A49"> ||</span><span style="color:#24292E"> userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">isEmpty</span><span style="color:#24292E">()){</span></span>
+<span class="line"><span style="color:#24292E">      roles </span><span style="color:#D73A49">=</span><span style="color:#24292E"> List.</span><span style="color:#6F42C1">of</span><span style="color:#24292E">(realmResource.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(</span><span style="color:#032F62">"user"</span><span style="color:#24292E">).</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    } </span><span style="color:#D73A49">else</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">      roles </span><span style="color:#D73A49">=</span><span style="color:#24292E"> realmResource</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">list</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">stream</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">filter</span><span style="color:#24292E">(role </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">              .</span><span style="color:#6F42C1">stream</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">              .</span><span style="color:#6F42C1">anyMatch</span><span style="color:#24292E">(roleName </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> roleName.</span><span style="color:#6F42C1">equalsIgnoreCase</span><span style="color:#24292E">(role.</span><span style="color:#6F42C1">getName</span><span style="color:#24292E">())))</span></span>
+<span class="line"><span style="color:#24292E">          .</span><span style="color:#6F42C1">toList</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">    realmResource</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">users</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">realmLevel</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">add</span><span style="color:#24292E">(roles);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#032F62"> "User created"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">  } </span><span style="color:#D73A49">else</span><span style="color:#D73A49"> if</span><span style="color:#24292E"> (status </span><span style="color:#D73A49">==</span><span style="color:#005CC5"> 409</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">error</span><span style="color:#24292E">(</span><span style="color:#032F62">"User already exists"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#032F62"> "User already exists"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">  } </span><span style="color:#D73A49">else</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">error</span><span style="color:#24292E">(</span><span style="color:#032F62">"Error creating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#032F62"> "Error creating user"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>Como podemos ver, este método es muy largo y hace muchas cosas, vamos a analizar un poco que hemos hecho para que este código sea más legible:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> String </span><span style="color:#6F42C1">createUser</span><span style="color:#24292E">(@</span><span style="color:#D73A49">NonNull</span><span style="color:#24292E"> UserRequest userRequest) {</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Creating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#6F42C1">  logRealmInfo</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  Response response </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> createUserInKeycloak</span><span style="color:#24292E">(userRequest);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  if</span><span style="color:#24292E"> (response.</span><span style="color:#6F42C1">getStatus</span><span style="color:#24292E">() </span><span style="color:#D73A49">==</span><span style="color:#24292E"> STATUS_CREATED) {</span></span>
+<span class="line"><span style="color:#6F42C1">    handleUserCreated</span><span style="color:#24292E">(response, userRequest);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#032F62"> "User created"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">  } </span><span style="color:#D73A49">else</span><span style="color:#D73A49"> if</span><span style="color:#24292E"> (response.</span><span style="color:#6F42C1">getStatus</span><span style="color:#24292E">() </span><span style="color:#D73A49">==</span><span style="color:#24292E"> STATUS_CONFLICT) {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">error</span><span style="color:#24292E">(</span><span style="color:#032F62">"User already exists"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#032F62"> "User already exists"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">  } </span><span style="color:#D73A49">else</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">error</span><span style="color:#24292E">(</span><span style="color:#032F62">"Error creating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#032F62"> "Error creating user"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ol>
+<li><strong>Extracción de la lógica de creación de usuarios:</strong>
+<ul>
+<li><strong>Antes:</strong> La lógica para crear un usuario en Keycloak estaba incrustada en el método.</li>
+<li><strong>Después:</strong> Se ha definido el método privado createUserInKeycloak(UserRequest userRequest) para manejar esta lógica.</li>
+</ul>
+</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> Response </span><span style="color:#6F42C1">createUserInKeycloak</span><span style="color:#24292E">(UserRequest userRequest){</span></span>
+<span class="line"><span style="color:#24292E">  UsersResource userResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  UserRepresentation userRepresentation </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> createUserRepresentationFromRequest</span><span style="color:#24292E">(userRequest);</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> userResource.</span><span style="color:#6F42C1">create</span><span style="color:#24292E">(userRepresentation);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ol start="2">
+<li><strong>Extración de la lógica de mapeo de usuario:</strong>
+<ul>
+<li><strong>Antes:</strong> La lógica para mapear un usuario de la petición a un objeto UserRepresentation estaba totalmente incrustada en el método.</li>
+<li><strong>Después:</strong> Se ha definido el método privado createUserRepresentationFromRequest(UserRequest userRequest) para manejar esta lógica.</li>
+</ul>
+</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> UserRepresentation </span><span style="color:#6F42C1">createUserRepresentationFromRequest</span><span style="color:#24292E">(UserRequest userRequest){</span></span>
+<span class="line"><span style="color:#24292E">  UserRepresentation userRepresentation </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> UserRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setFirstName</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">firstName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setLastName</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">lastName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setEmail</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">email</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setUsername</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">username</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setEnabled</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setEmailVerified</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setCredentials</span><span style="color:#24292E">(Collections.</span><span style="color:#6F42C1">singletonList</span><span style="color:#24292E">(</span><span style="color:#6F42C1">createCredentialRepresentation</span><span style="color:#24292E">(userRequest)));</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> userRepresentation;</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ol start="3">
+<li><strong>Extracción de la lógica de creación de credenciales:</strong>
+<ul>
+<li><strong>Antes:</strong> La lógica para crear las credenciales de un usuario estaba incrustada en el método.</li>
+<li><strong>Después:</strong> Se creó el método privado <code>createCredentialRepresentation(UserRequest userRequest)</code> para manejar esta lógica.</li>
+</ul>
+</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> CredentialRepresentation </span><span style="color:#6F42C1">createCredentialRepresentation</span><span style="color:#24292E">(UserRequest userRequest) {</span></span>
+<span class="line"><span style="color:#24292E">  CredentialRepresentation credentialRepresentation </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> CredentialRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  credentialRepresentation.</span><span style="color:#6F42C1">setTemporary</span><span style="color:#24292E">(</span><span style="color:#005CC5">false</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  credentialRepresentation.</span><span style="color:#6F42C1">setType</span><span style="color:#24292E">(OAuth2Constants.PASSWORD);</span></span>
+<span class="line"><span style="color:#24292E">  credentialRepresentation.</span><span style="color:#6F42C1">setValue</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">password</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> credentialRepresentation;</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ol start="4">
+<li><strong>Extracción de la lógica post-creación:</strong>
+<ul>
+<li><strong>Antes:</strong> Después de crear un usuario, había una lógica adicional para establecer la contraseña y asignar roles.</li>
+<li><strong>Después:</strong> Se creó el método privado <code>handleUserCreated(Response response, UserRequest userRequest)</code> para manejar esta lógica.</li>
+</ul>
+</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">private</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> handleUserCreated</span><span style="color:#24292E">(Response response, UserRequest userRequest) {</span></span>
+<span class="line"><span style="color:#24292E">  String userId </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> extractUserIdFromResponse</span><span style="color:#24292E">(response);</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"User id: {}"</span><span style="color:#24292E">, userId);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1">  setUserPassword</span><span style="color:#24292E">(userId, userRequest);</span></span>
+<span class="line"><span style="color:#6F42C1">  assignUserRoles</span><span style="color:#24292E">(userId, userRequest);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ol start="5">
+<li>**Extracción de la lógica para extraer el ID del usuario:
+<ul>
+<li><strong>Antes:</strong> Se manejaba la lógica para extraer el ID del usuario también en el mismo método.</li>
+<li><strong>Después:</strong> Se creó el método privado <code>extractUserIdFromResponse(Response response)</code> para manejar esta lógica.</li>
+</ul>
+</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> String </span><span style="color:#6F42C1">extractUserIdFromResponse</span><span style="color:#24292E">(Response response) {</span></span>
+<span class="line"><span style="color:#24292E">  String path </span><span style="color:#D73A49">=</span><span style="color:#24292E"> response.</span><span style="color:#6F42C1">getLocation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getPath</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> path.</span><span style="color:#6F42C1">substring</span><span style="color:#24292E">(path.</span><span style="color:#6F42C1">lastIndexOf</span><span style="color:#24292E">(</span><span style="color:#032F62">'/'</span><span style="color:#24292E">) </span><span style="color:#D73A49">+</span><span style="color:#005CC5"> 1</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ol start="6">
+<li><strong>Extracción de la lógica para establecer la contraseña del usuario:</strong>
+<ul>
+<li><strong>Antes:</strong> Se manejaba la lógica para establecer la contraseña del usuario también en el mismo método.</li>
+<li><strong>Después:</strong> Se creó el método privado <code>setUserPassword(String userId, UserRequest userRequest)</code> para manejar esta lógica.</li>
+</ul>
+</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">private</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> setUserPassword</span><span style="color:#24292E">(String userId, UserRequest userRequest) {</span></span>
+<span class="line"><span style="color:#24292E">  UsersResource usersResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  usersResource.</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId).</span><span style="color:#6F42C1">resetPassword</span><span style="color:#24292E">(</span><span style="color:#6F42C1">createCredentialRepresentation</span><span style="color:#24292E">(userRequest));</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ol start="7">
+<li><strong>Extracción de la lógica para asignar roles al usuario:</strong>
+<ul>
+<li><strong>Antes:</strong> Se manejaba la lógica para asignar roles al usuario también en el mismo método.</li>
+<li><strong>Después:</strong> Se creó el método privado <code>assignUserRoles(String userId, UserRequest userRequest)</code> para manejar esta lógica.</li>
+</ul>
+</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">private</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> assignUserRoles</span><span style="color:#24292E">(String userId, UserRequest userRequest) {</span></span>
+<span class="line"><span style="color:#24292E">  RealmResource realmResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  List&lt;</span><span style="color:#D73A49">RoleRepresentation</span><span style="color:#24292E">&gt; roles </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> determineRolesToAssign</span><span style="color:#24292E">(userRequest, realmResource);</span></span>
+<span class="line"><span style="color:#24292E">  realmResource.</span><span style="color:#6F42C1">users</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId).</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">realmLevel</span><span style="color:#24292E">().</span><span style="color:#6F42C1">add</span><span style="color:#24292E">(roles);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ol start="8">
+<li><strong>Extracción de la lógica para determinar los roles a asignar al usuario:</strong>
+<ul>
+<li><strong>Antes:</strong> Se manejaba la lógica para determinar los roles a asignar al usuario también en el mismo método.</li>
+<li><strong>Después:</strong> Se creó el método privado <code>determineRolesToAssign(UserRequest userRequest, RealmResource realmResource)</code> para manejar esta lógica.</li>
+</ul>
+</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> List</span><span style="color:#D73A49">&lt;</span><span style="color:#24292E">RoleRepresentation</span><span style="color:#D73A49">&gt;</span><span style="color:#6F42C1"> determineRolesToAssign</span><span style="color:#24292E">(UserRequest userRequest, RealmResource realmResource) {</span></span>
+<span class="line"><span style="color:#D73A49">  if</span><span style="color:#24292E"> (userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">() </span><span style="color:#D73A49">==</span><span style="color:#005CC5"> null</span><span style="color:#D73A49"> ||</span><span style="color:#24292E"> userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">isEmpty</span><span style="color:#24292E">()) {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> List.</span><span style="color:#6F42C1">of</span><span style="color:#24292E">(realmResource.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(</span><span style="color:#032F62">"user"</span><span style="color:#24292E">).</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  } </span><span style="color:#D73A49">else</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> realmResource.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">list</span><span style="color:#24292E">().</span><span style="color:#6F42C1">stream</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">filter</span><span style="color:#24292E">(role </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">stream</span><span style="color:#24292E">().</span><span style="color:#6F42C1">anyMatch</span><span style="color:#24292E">(roleName </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> roleName.</span><span style="color:#6F42C1">equalsIgnoreCase</span><span style="color:#24292E">(role.</span><span style="color:#6F42C1">getName</span><span style="color:#24292E">())))</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">collect</span><span style="color:#24292E">(Collectors.</span><span style="color:#6F42C1">toList</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>Finalmente se nos ha quedado un método mucho más legible y fácil de entender.</p>
+<h3 id="updateuserstring-userid-userrequest-userrequest">updateUser(String userId, UserRequest userRequest)</h3>
+<p>Vamos a echar un vistazo a como está implementado el método <code>updateUser(String userId, UserRequest userRequest)</code>:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> updateUser</span><span style="color:#24292E">(String userId, UserRequest userRepresentation) {</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Updating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Realm: {}"</span><span style="color:#24292E">, KeycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getRealm</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  CredentialRepresentation credentialRepresentation </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> CredentialRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  credentialRepresentation.</span><span style="color:#6F42C1">setTemporary</span><span style="color:#24292E">(</span><span style="color:#005CC5">false</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  credentialRepresentation.</span><span style="color:#6F42C1">setType</span><span style="color:#24292E">(OAuth2Constants.PASSWORD);</span></span>
+<span class="line"><span style="color:#24292E">  credentialRepresentation.</span><span style="color:#6F42C1">setValue</span><span style="color:#24292E">(userRepresentation.</span><span style="color:#6F42C1">password</span><span style="color:#24292E">());</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  UserRepresentation user </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> UserRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  user.</span><span style="color:#6F42C1">setFirstName</span><span style="color:#24292E">(userRepresentation.</span><span style="color:#6F42C1">firstName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  user.</span><span style="color:#6F42C1">setLastName</span><span style="color:#24292E">(userRepresentation.</span><span style="color:#6F42C1">lastName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  user.</span><span style="color:#6F42C1">setEmail</span><span style="color:#24292E">(userRepresentation.</span><span style="color:#6F42C1">email</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  user.</span><span style="color:#6F42C1">setUsername</span><span style="color:#24292E">(userRepresentation.</span><span style="color:#6F42C1">username</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  user.</span><span style="color:#6F42C1">setEnabled</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  user.</span><span style="color:#6F42C1">setEmailVerified</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  user.</span><span style="color:#6F42C1">setCredentials</span><span style="color:#24292E">(Collections.</span><span style="color:#6F42C1">singletonList</span><span style="color:#24292E">(credentialRepresentation));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  UserResource userResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> KeycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId);</span></span>
+<span class="line"><span style="color:#24292E">  userResource.</span><span style="color:#6F42C1">update</span><span style="color:#24292E">(user);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>Vamos a aplicar los mismos pasos que en el método anterior, y analizar como podemos dejar este método un poco más legible:</p>
+<ol>
+<li><strong>Extracción de la Lógica de Mapeo de Usuario:</strong>
+<ul>
+<li><strong>Antes:</strong> La lógica para mapear un usuario de la petición a un objeto UserRepresentation estaba en el método.</li>
+<li><strong>Después:</strong> Se utilizó el método privado createUserRepresentationFromRequest(UserRequest userRequest) para manejar esta lógica, así reutilizamos la lógica que ya teníamos en el método createUser.</li>
+</ul>
+</li>
+<li><strong>Extracción de la lógica de creación de credenciales:</strong>
+<ul>
+<li><strong>Antes:</strong> La lógica para crear una representación de las credenciales estaba incrustada en el método updateUser.</li>
+<li><strong>Después:</strong> Se utilizó el método privado createCredentialRepresentation(UserRequest userRequest) para manejar esta lógica, reutilizando código que ya habíamos extraído en el método createUser.</li>
+</ul>
+</li>
+</ol>
+<p>Finalmente nuestro método queda de esta manera, sustancialmente con menos líneas de código y aprovechando el código anterior:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> updateUser</span><span style="color:#24292E">(String userId, UserRequest userRepresentation) {</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Updating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#6F42C1">  logRealmInfo</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  UserResource userResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId);</span></span>
+<span class="line"><span style="color:#24292E">  userResource.</span><span style="color:#6F42C1">update</span><span style="color:#24292E">(</span><span style="color:#6F42C1">createUserRepresentationFromRequest</span><span style="color:#24292E">(userRepresentation));</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>Y finalmente se nos queda una clase más legible y más fácil de entender:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">Service</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">Slf4j</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">AllArgsConstructor</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> KeycloakService</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#D73A49"> final</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> int</span><span style="color:#24292E"> STATUS_CREATED </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 201</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#D73A49"> final</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> int</span><span style="color:#24292E"> STATUS_CONFLICT </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 409</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> KeycloakClient keycloakClient;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> List&lt;</span><span style="color:#D73A49">UserRepresentation</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">findAllUsers</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Finding all users"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#6F42C1">  logRealmInfo</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">users</span><span style="color:#24292E">().</span><span style="color:#6F42C1">list</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> List&lt;</span><span style="color:#D73A49">UserRepresentation</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">searchByUsername</span><span style="color:#24292E">(String </span><span style="color:#E36209">username</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">users</span><span style="color:#24292E">().</span><span style="color:#6F42C1">searchByUsername</span><span style="color:#24292E">(username, </span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> String </span><span style="color:#6F42C1">createUser</span><span style="color:#24292E">(@</span><span style="color:#D73A49">NonNull</span><span style="color:#24292E"> UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Creating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#6F42C1">  logRealmInfo</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  Response response </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> createUserInKeycloak</span><span style="color:#24292E">(userRequest);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  if</span><span style="color:#24292E"> (response.</span><span style="color:#6F42C1">getStatus</span><span style="color:#24292E">() </span><span style="color:#D73A49">==</span><span style="color:#24292E"> STATUS_CREATED) {</span></span>
+<span class="line"><span style="color:#6F42C1">    handleUserCreated</span><span style="color:#24292E">(response, userRequest);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#032F62"> "User created"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">  } </span><span style="color:#D73A49">else</span><span style="color:#D73A49"> if</span><span style="color:#24292E"> (response.</span><span style="color:#6F42C1">getStatus</span><span style="color:#24292E">() </span><span style="color:#D73A49">==</span><span style="color:#24292E"> STATUS_CONFLICT) {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">error</span><span style="color:#24292E">(</span><span style="color:#032F62">"User already exists"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#032F62"> "User already exists"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">  } </span><span style="color:#D73A49">else</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">    log.</span><span style="color:#6F42C1">error</span><span style="color:#24292E">(</span><span style="color:#032F62">"Error creating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#032F62"> "Error creating user"</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> deleteUser</span><span style="color:#24292E">(String </span><span style="color:#E36209">userId</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Deleting user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#6F42C1">  logRealmInfo</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  keycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId).</span><span style="color:#6F42C1">remove</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> updateUser</span><span style="color:#24292E">(String </span><span style="color:#E36209">userId</span><span style="color:#24292E">, UserRequest </span><span style="color:#E36209">userRepresentation</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Updating user"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#6F42C1">  logRealmInfo</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  UserResource userResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId);</span></span>
+<span class="line"><span style="color:#24292E">  userResource.</span><span style="color:#6F42C1">update</span><span style="color:#24292E">(</span><span style="color:#6F42C1">createUserRepresentationFromRequest</span><span style="color:#24292E">(userRepresentation));</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> logRealmInfo</span><span style="color:#24292E">(){</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"Realm: {}"</span><span style="color:#24292E">, keycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">().</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getRealm</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> Response </span><span style="color:#6F42C1">createUserInKeycloak</span><span style="color:#24292E">(UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">){</span></span>
+<span class="line"><span style="color:#24292E">  UsersResource userResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  UserRepresentation userRepresentation </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> createUserRepresentationFromRequest</span><span style="color:#24292E">(userRequest);</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> userResource.</span><span style="color:#6F42C1">create</span><span style="color:#24292E">(userRepresentation);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> UserRepresentation </span><span style="color:#6F42C1">createUserRepresentationFromRequest</span><span style="color:#24292E">(UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">){</span></span>
+<span class="line"><span style="color:#24292E">  UserRepresentation userRepresentation </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> UserRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setFirstName</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">firstName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setLastName</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">lastName</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setEmail</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">email</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setUsername</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">username</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setEnabled</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setEmailVerified</span><span style="color:#24292E">(</span><span style="color:#005CC5">true</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  userRepresentation.</span><span style="color:#6F42C1">setCredentials</span><span style="color:#24292E">(Collections.</span><span style="color:#6F42C1">singletonList</span><span style="color:#24292E">(</span><span style="color:#6F42C1">createCredentialRepresentation</span><span style="color:#24292E">(userRequest)));</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> userRepresentation;</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> CredentialRepresentation </span><span style="color:#6F42C1">createCredentialRepresentation</span><span style="color:#24292E">(UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">  CredentialRepresentation credentialRepresentation </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> CredentialRepresentation</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  credentialRepresentation.</span><span style="color:#6F42C1">setTemporary</span><span style="color:#24292E">(</span><span style="color:#005CC5">false</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">  credentialRepresentation.</span><span style="color:#6F42C1">setType</span><span style="color:#24292E">(OAuth2Constants.PASSWORD);</span></span>
+<span class="line"><span style="color:#24292E">  credentialRepresentation.</span><span style="color:#6F42C1">setValue</span><span style="color:#24292E">(userRequest.</span><span style="color:#6F42C1">password</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> credentialRepresentation;</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> handleUserCreated</span><span style="color:#24292E">(Response </span><span style="color:#E36209">response</span><span style="color:#24292E">, UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">  String userId </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> extractUserIdFromResponse</span><span style="color:#24292E">(response);</span></span>
+<span class="line"><span style="color:#24292E">  log.</span><span style="color:#6F42C1">info</span><span style="color:#24292E">(</span><span style="color:#032F62">"User id: {}"</span><span style="color:#24292E">, userId);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1">  setUserPassword</span><span style="color:#24292E">(userId, userRequest);</span></span>
+<span class="line"><span style="color:#6F42C1">  assignUserRoles</span><span style="color:#24292E">(userId, userRequest);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> String </span><span style="color:#6F42C1">extractUserIdFromResponse</span><span style="color:#24292E">(Response </span><span style="color:#E36209">response</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">  String path </span><span style="color:#D73A49">=</span><span style="color:#24292E"> response.</span><span style="color:#6F42C1">getLocation</span><span style="color:#24292E">().</span><span style="color:#6F42C1">getPath</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> path.</span><span style="color:#6F42C1">substring</span><span style="color:#24292E">(path.</span><span style="color:#6F42C1">lastIndexOf</span><span style="color:#24292E">(</span><span style="color:#032F62">'/'</span><span style="color:#24292E">) </span><span style="color:#D73A49">+</span><span style="color:#005CC5"> 1</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> setUserPassword</span><span style="color:#24292E">(String </span><span style="color:#E36209">userId</span><span style="color:#24292E">, UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">  UsersResource usersResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getUsersResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  usersResource.</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId).</span><span style="color:#6F42C1">resetPassword</span><span style="color:#24292E">(</span><span style="color:#6F42C1">createCredentialRepresentation</span><span style="color:#24292E">(userRequest));</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> assignUserRoles</span><span style="color:#24292E">(String </span><span style="color:#E36209">userId</span><span style="color:#24292E">, UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">  RealmResource realmResource </span><span style="color:#D73A49">=</span><span style="color:#24292E"> keycloakClient.</span><span style="color:#6F42C1">getRealmResource</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  List&lt;</span><span style="color:#D73A49">RoleRepresentation</span><span style="color:#24292E">&gt; roles </span><span style="color:#D73A49">=</span><span style="color:#6F42C1"> determineRolesToAssign</span><span style="color:#24292E">(userRequest, realmResource);</span></span>
+<span class="line"><span style="color:#24292E">  realmResource.</span><span style="color:#6F42C1">users</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(userId).</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">realmLevel</span><span style="color:#24292E">().</span><span style="color:#6F42C1">add</span><span style="color:#24292E">(roles);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> List&lt;</span><span style="color:#D73A49">RoleRepresentation</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">determineRolesToAssign</span><span style="color:#24292E">(UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">, RealmResource </span><span style="color:#E36209">realmResource</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">  if</span><span style="color:#24292E"> (userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">() </span><span style="color:#D73A49">==</span><span style="color:#005CC5"> null</span><span style="color:#D73A49"> ||</span><span style="color:#24292E"> userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">isEmpty</span><span style="color:#24292E">()) {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> List.</span><span style="color:#6F42C1">of</span><span style="color:#24292E">(realmResource.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(</span><span style="color:#032F62">"user"</span><span style="color:#24292E">).</span><span style="color:#6F42C1">toRepresentation</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  } </span><span style="color:#D73A49">else</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> realmResource.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">list</span><span style="color:#24292E">().</span><span style="color:#6F42C1">stream</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">filter</span><span style="color:#24292E">(role </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> userRequest.</span><span style="color:#6F42C1">roles</span><span style="color:#24292E">().</span><span style="color:#6F42C1">stream</span><span style="color:#24292E">().</span><span style="color:#6F42C1">anyMatch</span><span style="color:#24292E">(roleName </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> roleName.</span><span style="color:#6F42C1">equalsIgnoreCase</span><span style="color:#24292E">(role.</span><span style="color:#6F42C1">getName</span><span style="color:#24292E">())))</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">collect</span><span style="color:#24292E">(Collectors.</span><span style="color:#6F42C1">toList</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<h2 id="keycloakcontrollerjava">KeycloakController.java</h2>
+<p>En nuestro controlador, no hay mucho por hacer, pero podemos corregir unos pequeños errores de código:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">RestController</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">RequestMapping</span><span style="color:#24292E">(</span><span style="color:#032F62">"/api/users"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">AllArgsConstructor</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> KeycloakController</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">private</span><span style="color:#24292E"> KeycloakService keycloakService;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">GetMapping</span><span style="color:#24292E">(</span><span style="color:#032F62">"/all"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">PreAuthorize</span><span style="color:#24292E">(</span><span style="color:#032F62">"hasRole('admin_client_role')"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> ResponseEntity&lt;</span><span style="color:#D73A49">?</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">findAllUsers</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> ResponseEntity.</span><span style="color:#6F42C1">ok</span><span style="color:#24292E">(keycloakService.</span><span style="color:#6F42C1">findAllUsers</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">GetMapping</span><span style="color:#24292E">(</span><span style="color:#032F62">"/user/{username}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">PreAuthorize</span><span style="color:#24292E">(</span><span style="color:#032F62">"hasRole('admin_client_role')"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> ResponseEntity&lt;</span><span style="color:#D73A49">?</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">searchByUsername</span><span style="color:#24292E">(@</span><span style="color:#D73A49">PathVariable</span><span style="color:#24292E"> String </span><span style="color:#E36209">username</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> ResponseEntity.</span><span style="color:#6F42C1">ok</span><span style="color:#24292E">(keycloakService.</span><span style="color:#6F42C1">searchByUsername</span><span style="color:#24292E">(username));</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">PostMapping</span><span style="color:#24292E">(</span><span style="color:#032F62">"/user/create"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">PreAuthorize</span><span style="color:#24292E">(</span><span style="color:#032F62">"hasRole('admin_client_role')"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> ResponseEntity&lt;</span><span style="color:#D73A49">?</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">createUser</span><span style="color:#24292E">(@</span><span style="color:#D73A49">RequestBody</span><span style="color:#24292E"> UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">) </span><span style="color:#D73A49">throws</span><span style="color:#24292E"> URISyntaxException {</span></span>
+<span class="line"><span style="color:#24292E">  String response </span><span style="color:#D73A49">=</span><span style="color:#24292E"> keycloakService.</span><span style="color:#6F42C1">createUser</span><span style="color:#24292E">(userRequest);</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> ResponseEntity.</span><span style="color:#6F42C1">created</span><span style="color:#24292E">(</span><span style="color:#D73A49">new</span><span style="color:#6F42C1"> URI</span><span style="color:#24292E">(</span><span style="color:#032F62">"/api/users/user/create"</span><span style="color:#24292E">)).</span><span style="color:#6F42C1">body</span><span style="color:#24292E">(response);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">PutMapping</span><span style="color:#24292E">(</span><span style="color:#032F62">"/user/update/{userId}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">PreAuthorize</span><span style="color:#24292E">(</span><span style="color:#032F62">"hasRole('admin_client_role')"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#24292E"> ResponseEntity&lt;</span><span style="color:#D73A49">?</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">updateUser</span><span style="color:#24292E">(@</span><span style="color:#D73A49">PathVariable</span><span style="color:#24292E"> String </span><span style="color:#E36209">userId</span><span style="color:#24292E">, @</span><span style="color:#D73A49">RequestBody</span><span style="color:#24292E"> UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">  keycloakService.</span><span style="color:#6F42C1">updateUser</span><span style="color:#24292E">(userId, userRequest);</span></span>
+<span class="line"><span style="color:#D73A49">  return</span><span style="color:#24292E"> ResponseEntity.</span><span style="color:#6F42C1">ok</span><span style="color:#24292E">(</span><span style="color:#032F62">"User updated successfully"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>Hay una serie de cosas que podemos mejorar:</p>
+<ol>
+<li><strong>Consistencia en las Rutas de la API:</strong>
+<ul>
+<li><strong>Antes:</strong> Las rutas como /user/{username}, /user/create, /user/update/{userId}.</li>
+<li><strong>Después:</strong> Se elimina el segmento /user y usar rutas como /{username}, /create, /update/{userId}. Dado que ya está en el controlador (/api/users), es redundante.</li>
+</ul>
+</li>
+<li><strong>Respuestas de la API:</strong>
+<ul>
+<li><strong>Antes:</strong> Se está devolviendo ResponseEntity&lt;?&gt;.</li>
+<li><strong>Después:</strong> Especifica el tipo de respuesta en lugar de usar un comodín. Por ejemplo, ResponseEntity&lt;List<UserRepresentation>&gt; para findAllUsers().</li>
+</ul>
+</li>
+</ol>
+<p>Y finalmente queda de la siguiente manera:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">RestController</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">RequestMapping</span><span style="color:#24292E">(</span><span style="color:#032F62">"/api/users"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">AllArgsConstructor</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> KeycloakController</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#24292E"> KeycloakService keycloakService;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">GetMapping</span><span style="color:#24292E">(</span><span style="color:#032F62">"/all"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">PreAuthorize</span><span style="color:#24292E">(</span><span style="color:#032F62">"hasRole('admin_client_role')"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> ResponseEntity&lt;List&lt;</span><span style="color:#D73A49">UserRepresentation</span><span style="color:#24292E">&gt;&gt; </span><span style="color:#6F42C1">findAll</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> ResponseEntity.</span><span style="color:#6F42C1">ok</span><span style="color:#24292E">(keycloakService.</span><span style="color:#6F42C1">findAllUsers</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">GetMapping</span><span style="color:#24292E">(</span><span style="color:#032F62">"/{username}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">PreAuthorize</span><span style="color:#24292E">(</span><span style="color:#032F62">"hasRole('admin_client_role') or hasRole('user_client_role')"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> ResponseEntity&lt;</span><span style="color:#D73A49">UserRepresentation</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">searchByUsername</span><span style="color:#24292E">(@</span><span style="color:#D73A49">PathVariable</span><span style="color:#24292E"> String </span><span style="color:#E36209">username</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> ResponseEntity.</span><span style="color:#6F42C1">ok</span><span style="color:#24292E">(keycloakService.</span><span style="color:#6F42C1">searchByUsername</span><span style="color:#24292E">(username).</span><span style="color:#6F42C1">get</span><span style="color:#24292E">(</span><span style="color:#005CC5">0</span><span style="color:#24292E">));</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">PostMapping</span><span style="color:#24292E">(</span><span style="color:#032F62">"/create"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">PreAuthorize</span><span style="color:#24292E">(</span><span style="color:#032F62">"hasRole('admin_client_role')"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> ResponseEntity&lt;</span><span style="color:#D73A49">ApiResponse</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">createUser</span><span style="color:#24292E">(@</span><span style="color:#D73A49">RequestBody</span><span style="color:#24292E"> UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">) </span><span style="color:#D73A49">throws</span><span style="color:#24292E"> URISyntaxException {</span></span>
+<span class="line"><span style="color:#24292E">    String userId </span><span style="color:#D73A49">=</span><span style="color:#24292E"> keycloakService.</span><span style="color:#6F42C1">createUser</span><span style="color:#24292E">(userRequest);</span></span>
+<span class="line"><span style="color:#24292E">    URI location </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> URI</span><span style="color:#24292E">(</span><span style="color:#032F62">"/api/users/"</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> userId);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> ResponseEntity.</span><span style="color:#6F42C1">created</span><span style="color:#24292E">(location).</span><span style="color:#6F42C1">body</span><span style="color:#24292E">(</span><span style="color:#D73A49">new</span><span style="color:#6F42C1"> ApiResponse</span><span style="color:#24292E">(</span><span style="color:#032F62">"User created successfully"</span><span style="color:#24292E">, HttpStatus.CREATED.</span><span style="color:#6F42C1">value</span><span style="color:#24292E">()));</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">PutMapping</span><span style="color:#24292E">(</span><span style="color:#032F62">"/update/{userId}"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">PreAuthorize</span><span style="color:#24292E">(</span><span style="color:#032F62">"hasRole('admin_client_role')"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">  public</span><span style="color:#24292E"> ResponseEntity&lt;</span><span style="color:#D73A49">ApiResponse</span><span style="color:#24292E">&gt; </span><span style="color:#6F42C1">updateUser</span><span style="color:#24292E">(@</span><span style="color:#D73A49">PathVariable</span><span style="color:#24292E"> String </span><span style="color:#E36209">userId</span><span style="color:#24292E">, @</span><span style="color:#D73A49">RequestBody</span><span style="color:#24292E"> UserRequest </span><span style="color:#E36209">userRequest</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">    keycloakService.</span><span style="color:#6F42C1">updateUser</span><span style="color:#24292E">(userId, userRequest);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> ResponseEntity.</span><span style="color:#6F42C1">ok</span><span style="color:#24292E">(</span><span style="color:#D73A49">new</span><span style="color:#6F42C1"> ApiResponse</span><span style="color:#24292E">(</span><span style="color:#032F62">"User updated successfully"</span><span style="color:#24292E">, HttpStatus.OK.</span><span style="color:#6F42C1">value</span><span style="color:#24292E">()));</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<h2 id="securityconfigurationjava">SecurityConfiguration.java</h2>
+<p>En esta clase haremos unos cambios menores:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">Configuration</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">EnableWebSecurity</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">EnableMethodSecurity</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">RequiredArgsConstructor</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> SecurityConfiguration</span><span style="color:#24292E"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#D73A49"> final</span><span style="color:#24292E"> JwtAuthenticationConverter jwtAuthenticationConverter;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Bean</span></span>
+<span class="line"><span style="color:#24292E">  SecurityFilterChain </span><span style="color:#6F42C1">securityFilterChain</span><span style="color:#24292E">(HttpSecurity </span><span style="color:#E36209">http</span><span style="color:#24292E">) </span><span style="color:#D73A49">throws</span><span style="color:#24292E"> Exception {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> http</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">csrf</span><span style="color:#24292E">(AbstractHttpConfigurer</span><span style="color:#D73A49">::</span><span style="color:#24292E">disable)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">authorizeHttpRequests</span><span style="color:#24292E">(authorize </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">          authorize</span></span>
+<span class="line"><span style="color:#24292E">              .</span><span style="color:#6F42C1">requestMatchers</span><span style="color:#24292E">(</span><span style="color:#032F62">"/api/auth/login"</span><span style="color:#24292E">).</span><span style="color:#6F42C1">permitAll</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">              .</span><span style="color:#6F42C1">anyRequest</span><span style="color:#24292E">().</span><span style="color:#6F42C1">authenticated</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">        })</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">oauth2ResourceServer</span><span style="color:#24292E">(oauth2 </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">          oauth2.</span><span style="color:#6F42C1">jwt</span><span style="color:#24292E">(jwtConfigurer </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">            jwtConfigurer.</span><span style="color:#6F42C1">jwtAuthenticationConverter</span><span style="color:#24292E">(jwtAuthenticationConverter);</span></span>
+<span class="line"><span style="color:#24292E">          });</span></span>
+<span class="line"><span style="color:#24292E">        })</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">sessionManagement</span><span style="color:#24292E">(session </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> session.</span><span style="color:#6F42C1">sessionCreationPolicy</span><span style="color:#24292E">(SessionCreationPolicy.STATELESS))</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">build</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>Lo único que haremos será remover unas llaves que no son necesarias.</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">Configuration</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">EnableWebSecurity</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">EnableMethodSecurity</span></span>
+<span class="line"><span style="color:#24292E">@</span><span style="color:#D73A49">RequiredArgsConstructor</span></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> SecurityConfiguration</span><span style="color:#24292E"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">  private</span><span style="color:#D73A49"> final</span><span style="color:#24292E"> JwtAuthenticationConverter jwtAuthenticationConverter;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">  @</span><span style="color:#D73A49">Bean</span></span>
+<span class="line"><span style="color:#24292E">  SecurityFilterChain </span><span style="color:#6F42C1">securityFilterChain</span><span style="color:#24292E">(HttpSecurity </span><span style="color:#E36209">http</span><span style="color:#24292E">) </span><span style="color:#D73A49">throws</span><span style="color:#24292E"> Exception {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> http</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">csrf</span><span style="color:#24292E">(AbstractHttpConfigurer</span><span style="color:#D73A49">::</span><span style="color:#24292E">disable)</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">authorizeHttpRequests</span><span style="color:#24292E">(authorize </span><span style="color:#D73A49">-&gt;</span></span>
+<span class="line"><span style="color:#24292E">          authorize</span></span>
+<span class="line"><span style="color:#24292E">              .</span><span style="color:#6F42C1">requestMatchers</span><span style="color:#24292E">(</span><span style="color:#032F62">"/api/auth/login"</span><span style="color:#24292E">).</span><span style="color:#6F42C1">permitAll</span><span style="color:#24292E">()</span></span>
+<span class="line"><span style="color:#24292E">              .</span><span style="color:#6F42C1">anyRequest</span><span style="color:#24292E">().</span><span style="color:#6F42C1">authenticated</span><span style="color:#24292E">())</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">oauth2ResourceServer</span><span style="color:#24292E">(oauth2 </span><span style="color:#D73A49">-&gt;</span></span>
+<span class="line"><span style="color:#24292E">          oauth2.</span><span style="color:#6F42C1">jwt</span><span style="color:#24292E">(jwtConfigurer </span><span style="color:#D73A49">-&gt;</span></span>
+<span class="line"><span style="color:#24292E">            jwtConfigurer.</span><span style="color:#6F42C1">jwtAuthenticationConverter</span><span style="color:#24292E">(jwtAuthenticationConverter)))</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">sessionManagement</span><span style="color:#24292E">(session </span><span style="color:#D73A49">-&gt;</span><span style="color:#24292E"> session.</span><span style="color:#6F42C1">sessionCreationPolicy</span><span style="color:#24292E">(SessionCreationPolicy.STATELESS))</span></span>
+<span class="line"><span style="color:#24292E">        .</span><span style="color:#6F42C1">build</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>Después de estos cambios, podremos pasar la aplicación por nuestro Scanner de SonarQube y ver que ya no tenemos errores, y que la calidad de nuestro código ha mejorado sustancialmente.</p>
+<p><img src="/assets/keycloak/sonar.png" alt="SonarQube analysis"></p>
+<p>Sin duda, hay muchas cosas que se pueden mejorar en esta implementación, tampoco soy un experto refactorizando código, ni tampoco es cuestión de hacer sobre ingeniería en este proyecto, pero si duda es una buena mejoría y un buen punto de partida para seguir mejorando.</p>
+</article></main><footer data-astro-cid-jo6i4kqk><div class="wrap" data-astro-cid-jo6i4kqk><span class="label" data-astro-cid-jo6i4kqk>romeralvarez.me</span><span class="links" data-astro-cid-jo6i4kqk><a class="label" href="https://github.com/RomerEnr" rel="me" data-astro-cid-jo6i4kqk>GitHub</a><a class="label" href="https://www.linkedin.com/in/romer-alvarez-martinez" rel="me" data-astro-cid-jo6i4kqk>LinkedIn</a><a class="label" href="mailto:romeralvareziv@gmail.com" data-astro-cid-jo6i4kqk>Email</a></span><span class="label" data-astro-cid-jo6i4kqk>Alessandria · Remoto</span></div></footer></body></html>

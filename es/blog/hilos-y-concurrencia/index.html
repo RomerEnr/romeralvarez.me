@@ -1,0 +1,447 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Threads introducción a hilos y concurrencia en Java · Romer Alvarez</title><meta name="description" content="La concurrencia y la programación multihilo son técnicas poderosas para mejorar el rendimiento y la capacidad de respuesta de las aplicaciones. Sin embargo, su uso también puede generar desafíos únicos. Aquí te presentamos algunas buenas prácticas y consideraciones a tener en cuenta al utilizar hilos y concurrencia en tus proyectos Java."><link rel="canonical" href="https://romeralvarez.me/es/blog/hilos-y-concurrencia/"><link rel="alternate" hreflang="es" href="https://romeralvarez.me/es/blog/hilos-y-concurrencia/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="Romer Alvarez · Blog" href="/rss.xml"><meta name="theme-color" content="#f2f3f5"><meta property="og:type" content="article"><meta property="og:title" content="Threads introducción a hilos y concurrencia en Java · Romer Alvarez"><meta property="og:description" content="La concurrencia y la programación multihilo son técnicas poderosas para mejorar el rendimiento y la capacidad de respuesta de las aplicaciones. Sin embargo, su uso también puede generar desafíos únicos. Aquí te presentamos algunas buenas prácticas y consideraciones a tener en cuenta al utilizar hilos y concurrencia en tus proyectos Java."><meta property="og:url" content="https://romeralvarez.me/es/blog/hilos-y-concurrencia/"><meta property="og:locale" content="es_ES"><meta property="og:site_name" content="Romer Alvarez"><meta name="twitter:card" content="summary"><style>@font-face{font-family:"Funnel Display-12ca865bf053342f";src:url("/_astro/fonts/6d848bd7c4d66300.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"Funnel Display-12ca865bf053342f fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:normal;size-adjust:107.8583%;ascent-override:92.7142%;descent-override:23.1786%;line-gap-override:0%;}:root{--font-display:"Funnel Display-12ca865bf053342f","Funnel Display-12ca865bf053342f fallback: Arial",sans-serif;}</style><link rel="preload" href="/_astro/fonts/6d848bd7c4d66300.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/b0f574a27e2e8d39.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:400;font-style:italic;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/b0f574a27e2e8d39.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:italic;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/53c9791758e212af.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:400;font-style:normal;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/53c9791758e212af.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:400;font-style:italic;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:italic;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:400;font-style:normal;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:normal;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}:root{--font-sans:"Funnel Sans-3bd738e10bbce5f0","Funnel Sans-3bd738e10bbce5f0 fallback: Arial",sans-serif;}</style><style>@font-face{font-family:"Geist Mono-1c9b647e0ff632a6";src:url("/_astro/fonts/ba5d61c96960c427.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:italic;}@font-face{font-family:"Geist Mono-1c9b647e0ff632a6";src:url("/_astro/fonts/4885f00022c710c3.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"Geist Mono-1c9b647e0ff632a6 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:italic;size-adjust:134.5893%;ascent-override:74.6716%;descent-override:21.9185%;line-gap-override:0%;}@font-face{font-family:"Geist Mono-1c9b647e0ff632a6 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:normal;size-adjust:134.5893%;ascent-override:74.6716%;descent-override:21.9185%;line-gap-override:0%;}:root{--font-mono:"Geist Mono-1c9b647e0ff632a6","Geist Mono-1c9b647e0ff632a6 fallback: Arial",sans-serif;}</style><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Threads introducción a hilos y concurrencia en Java","description":"La concurrencia y la programación multihilo son técnicas poderosas para mejorar el rendimiento y la capacidad de respuesta de las aplicaciones. Sin embargo, su uso también puede generar desafíos únicos. Aquí te presentamos algunas buenas prácticas y consideraciones a tener en cuenta al utilizar hilos y concurrencia en tus proyectos Java.","datePublished":"2023-04-30T14:00:00.000Z","dateModified":"2023-04-30T14:00:00.000Z","inLanguage":"es","url":"https://romeralvarez.me/es/blog/hilos-y-concurrencia/","author":{"@type":"Person","name":"Romer Alvarez","url":"https://romeralvarez.me"}}</script><link rel="stylesheet" href="/_astro/Base.DsERtDe_.css"><style>main[data-astro-cid-g5songws]{padding-block:48px 96px}.back[data-astro-cid-g5songws]{text-decoration:none}.back[data-astro-cid-g5songws]:hover{color:var(--pipeline-ink)}header[data-astro-cid-g5songws]{max-width:22ch;margin:40px 0 48px}header[data-astro-cid-g5songws] h1[data-astro-cid-g5songws]{max-width:none;margin-top:16px;font-size:clamp(40px,5.6vw,76px);line-height:1}header[data-astro-cid-g5songws]{max-width:900px}.tags[data-astro-cid-g5songws]{flex-wrap:wrap;gap:8px;margin:24px 0 0;padding:0;list-style:none;display:flex}.tags[data-astro-cid-g5songws] li[data-astro-cid-g5songws]{font:500 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--pipeline-soft);color:var(--pipeline-ink);border-radius:6px;padding:8px 10px}.prose[data-astro-cid-g5songws]{max-width:720px;font-size:18px;line-height:1.7}.prose[data-astro-cid-g5songws] h1,.prose[data-astro-cid-g5songws] h2,.prose[data-astro-cid-g5songws] h3,.prose[data-astro-cid-g5songws] h4{font-family:var(--display);letter-spacing:-.02em;margin:2em 0 .6em;font-weight:500;line-height:1.15}.prose[data-astro-cid-g5songws] h1,.prose[data-astro-cid-g5songws] h2{font-size:clamp(28px,3vw,36px)}.prose[data-astro-cid-g5songws] h3{font-size:24px}.prose[data-astro-cid-g5songws] h4{font-size:20px}.prose[data-astro-cid-g5songws] :is(h1,h2,h3,h4) strong{font-weight:inherit}.prose[data-astro-cid-g5songws]>:first-child{margin-top:0}.prose[data-astro-cid-g5songws] p,.prose[data-astro-cid-g5songws] ul,.prose[data-astro-cid-g5songws] ol{margin:0 0 1.2em}.prose[data-astro-cid-g5songws] li{margin:.3em 0}.prose[data-astro-cid-g5songws] a{color:var(--pipeline-ink);text-underline-offset:3px}.prose[data-astro-cid-g5songws] img{background:var(--surface);border-radius:12px;max-width:100%;height:auto;margin:2em auto;display:block}.prose[data-astro-cid-g5songws] blockquote{border-left:4px solid var(--pipeline);color:var(--ink-muted);margin:1.6em 0;padding:4px 0 4px 20px}.prose[data-astro-cid-g5songws] :not(pre)>code{font:500 .88em var(--mono);background:var(--surface);border-radius:6px;padding:2px 6px}.prose[data-astro-cid-g5songws] pre{font:500 14px/1.6 var(--mono);border:1px solid var(--line);border-radius:12px;margin:1.6em 0;padding:20px;overflow-x:auto}.prose[data-astro-cid-g5songws] table{border-collapse:collapse;width:100%;margin:1.6em 0;font-size:16px;display:block;overflow-x:auto}.prose[data-astro-cid-g5songws] th,.prose[data-astro-cid-g5songws] td{border-bottom:1px solid var(--line);text-align:left;padding:10px 12px}.prose[data-astro-cid-g5songws] hr{border:0;border-top:1px solid var(--line);margin:3em 0}
+</style></head><body><header data-astro-cid-nen7h5rs><div class="wrap" data-astro-cid-nen7h5rs><a class="brand" href="/es/" data-astro-cid-nen7h5rs>Romer Alvarez</a><nav class="actions" aria-label="Menú principal" data-astro-cid-nen7h5rs><div class="langs" role="group" aria-label="Idioma" data-astro-cid-nen7h5rs><a href="/" hreflang="en" lang="en" data-astro-cid-nen7h5rs>EN</a><a href="/it/" hreflang="it" lang="it" data-astro-cid-nen7h5rs>IT</a><a href="/es/blog/hilos-y-concurrencia/" hreflang="es" lang="es" aria-current="true" data-astro-cid-nen7h5rs>ES</a></div><details class="menu" data-astro-cid-nen7h5rs><summary class="pill dark" data-astro-cid-nen7h5rs>Menú</summary><ul data-astro-cid-nen7h5rs><li data-astro-cid-nen7h5rs><a href="/es/#services" data-astro-cid-nen7h5rs>Qué hago</a></li><li data-astro-cid-nen7h5rs><a href="/es/#projects" data-astro-cid-nen7h5rs>Proyectos</a></li><li data-astro-cid-nen7h5rs><a href="/es/blog/" data-astro-cid-nen7h5rs>Blog</a></li><li data-astro-cid-nen7h5rs><a href="/es/#contact" data-astro-cid-nen7h5rs>Contacto</a></li></ul></details><a class="pill cta" href="/es/#contact" data-astro-cid-nen7h5rs>Hablemos</a></nav></div></header><script type="module">var e=document.querySelector(`details.menu`);document.addEventListener(`click`,t=>{e?.open&&(!e.contains(t.target)||t.target.closest(`a`))&&(e.open=!1)});</script><main class="wrap flowing" data-astro-cid-g5songws><a class="back label" href="/es/blog/" data-astro-cid-g5songws>← Todos los artículos</a><header data-astro-cid-g5songws><time class="label" datetime="2023-04-30T14:00:00.000Z" data-astro-cid-g5songws>30 de abril de 2023</time><h1 data-astro-cid-g5songws>Threads introducción a hilos y concurrencia en Java</h1><ul class="tags" data-astro-cid-g5songws><li data-astro-cid-g5songws>java</li><li data-astro-cid-g5songws>hilos y concurrencia</li><li data-astro-cid-g5songws>POO</li></ul></header><article class="prose" data-astro-cid-g5songws><h1 id="threads-hilos-y-concurrencia">Threads: Hilos y concurrencia</h1>
+<p>Los <strong>hilos</strong> son objetos que nos dan la capacidad de hacer más de una tarea al mismo tiempo.</p>
+<h3 id="características-de-los-hilos">Características de los hilos</h3>
+<ul>
+<li>La máquina virtual de Java es un sistema <strong>multi hilos</strong> capaz de ejecutar varias tareas al mismo tiempo.</li>
+<li>Java soporta <strong>Thread</strong> con algunas clases e interfaces y con métodos específicos en la clase <code>**Object**</code>.</li>
+<li>La JVM gestiona todos los detalles, asignación de tiempos de ejecución, prioridades, de forma similar a como gestiona un sistema operativo.</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> MiHilo</span><span style="color:#D73A49"> extends</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> String nombre;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#6F42C1"> MiHilo</span><span style="color:#24292E">(String </span><span style="color:#E36209">nombre</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#005CC5">        this</span><span style="color:#24292E">.nombre </span><span style="color:#D73A49">=</span><span style="color:#24292E"> nombre;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> run</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        for</span><span style="color:#24292E"> (</span><span style="color:#D73A49">int</span><span style="color:#24292E"> i </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 0</span><span style="color:#24292E">; i </span><span style="color:#D73A49">&lt;</span><span style="color:#005CC5"> 5</span><span style="color:#24292E">; i</span><span style="color:#D73A49">++</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">            System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(nombre </span><span style="color:#D73A49">+</span><span style="color:#032F62"> " - Contador: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> i);</span></span>
+<span class="line"><span style="color:#D73A49">            try</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#6A737D">                // Pausamos el hilo por 500 milisegundos</span></span>
+<span class="line"><span style="color:#24292E">                Thread.</span><span style="color:#6F42C1">sleep</span><span style="color:#24292E">(</span><span style="color:#005CC5">500</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">            } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (InterruptedException </span><span style="color:#E36209">e</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">                System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(</span><span style="color:#032F62">"Error en la pausa del hilo: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> e.</span><span style="color:#6F42C1">getMessage</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">            }</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> EjemploThread</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> main</span><span style="color:#24292E">(</span><span style="color:#D73A49">String</span><span style="color:#24292E">[] </span><span style="color:#E36209">args</span><span style="color:#24292E">) {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        MiHilo hilo1 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> MiHilo</span><span style="color:#24292E">(</span><span style="color:#032F62">"Hilo 1"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">        MiHilo hilo2 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> MiHilo</span><span style="color:#24292E">(</span><span style="color:#032F62">"Hilo 2"</span><span style="color:#24292E">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        hilo1.</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">        hilo2.</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>Al heredar de la clase <code>**Thread**</code>, podremos <strong>sobreescribir</strong> el método <code>**.run()**</code> pero este <strong>no se llama nunca explicitamente</strong>, se manda a llamar con el método <code>**.start()**</code>, son tareas que se ejecutan dentro de un proceso:</p>
+<p>Este ejemplo crea dos hilos <strong>(hilo1 y hilo2)</strong> que <strong>imprimen su contador hasta 5 con una pausa de 500 milisegundos entre cada iteración.</strong> La clase <code>MiHilo</code> extiende de la clase <code>**Thread**</code> y <strong>sobreescribe</strong> el método <code>**run()**</code> con el código que se desea ejecutar en cada hilo. Para iniciar los hilos, se llama al método <code>start()</code> en las instancias de la clase <code>MiHilo</code>.</p>
+<h3 id="interfaz-runnable">Interfaz runnable</h3>
+<p>También tenemos <strong>una manera que es más desacoplada</strong> de realizar esta acción que es a través de la <strong>interfaz</strong> <code>**Runnable**</code> y también implementa el método <code>**.run()**</code></p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#D73A49"> implements</span><span style="color:#6F42C1"> Runnable</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> String nombre;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#24292E">(String </span><span style="color:#E36209">nombre</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#005CC5">        this</span><span style="color:#24292E">.nombre </span><span style="color:#D73A49">=</span><span style="color:#24292E"> nombre;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> run</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        for</span><span style="color:#24292E"> (</span><span style="color:#D73A49">int</span><span style="color:#24292E"> i </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 0</span><span style="color:#24292E">; i </span><span style="color:#D73A49">&lt;</span><span style="color:#005CC5"> 5</span><span style="color:#24292E">; i</span><span style="color:#D73A49">++</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">            System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(nombre </span><span style="color:#D73A49">+</span><span style="color:#032F62"> " - Contador: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> i);</span></span>
+<span class="line"><span style="color:#D73A49">            try</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#6A737D">                // Pausamos el hilo por 500 milisegundos</span></span>
+<span class="line"><span style="color:#24292E">                Thread.</span><span style="color:#6F42C1">sleep</span><span style="color:#24292E">(</span><span style="color:#005CC5">500</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">            } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (InterruptedException </span><span style="color:#E36209">e</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">                System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(</span><span style="color:#032F62">"Error en la pausa del hilo: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> e.</span><span style="color:#6F42C1">getMessage</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">            }</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> EjemploRunnable</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> main</span><span style="color:#24292E">(</span><span style="color:#D73A49">String</span><span style="color:#24292E">[] </span><span style="color:#E36209">args</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#6A737D">        // Creamos instancias de la clase MiTarea</span></span>
+<span class="line"><span style="color:#24292E">        MiTarea tarea1 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#24292E">(</span><span style="color:#032F62">"Tarea 1"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">        MiTarea tarea2 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#24292E">(</span><span style="color:#032F62">"Tarea 2"</span><span style="color:#24292E">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">        // Creamos instancias de la clase Thread y le pasamos las tareas como argumento</span></span>
+<span class="line"><span style="color:#24292E">        Thread hilo1 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(tarea1);</span></span>
+<span class="line"><span style="color:#24292E">        Thread hilo2 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(tarea2);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">        // Iniciamos la ejecución de los hilos con el método start()</span></span>
+<span class="line"><span style="color:#24292E">        hilo1.</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">        hilo2.</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>En este caso, la clase <code>**MiTarea**</code> <strong>implementa la interfaz</strong> <code>**Runnable**</code> en lugar de <strong>extender de la clase <code>Thread</code></strong>. En lugar de crear instancias de la clase <code>**MiTarea**</code> directamente, <strong>creamos instancias de la clase</strong> <code>**Thread**</code>, le pasamos por el constructor los objetos instanciados de <code>**MiTarea**</code> e iniciamos la ejecución con el método <code>**.start()**</code>.</p>
+<h3 id="qué-ganamos-implementando-el-hilo-de-esta-manera">¿Qué ganamos implementando el hilo de esta manera?</h3>
+<p>Tenemos una serie de ventajas al implementar la <strong>interfaz</strong> <code>Runnable</code> como:</p>
+<ul>
+<li>
+<p>Nos permite <strong>establecer una jerarquía de clases</strong> ¿Qué quiere decir esto? Si ya estás he<strong>redando de una clase no puedes extender de la clase</strong> <code>Threads</code> a,por lo tanto no podemos establecer una jerarquía de clases.</p>
+<p>Al implementar la <strong>interfaz <code>Runnable</code></strong>, <strong>puedes mantener la herencia de la otra clase</strong>, y al mismo tiempo, <strong>tener un hilo en tu clase.</strong></p>
+</li>
+<li>
+<p>La <strong>interfaz</strong> <strong><code>Runnable</code></strong> <strong>permite separar la lógica</strong> <strong>del hilo</strong> de ejecución (el método <code>**run()**</code>) de la lógica de control de hilo (<code>**Thread**</code> como <code>**start()**</code> <code>**sleep()**</code>, etc.) De esta manera <strong>puedes reutilizar la lógica</strong> del hilo (<code>**Runnable**</code>)en diferentes contextos.</p>
+</li>
+<li>
+<p><strong>Facilita el uso de frameworks y APIs modernas:</strong> Muchos frameworks y APIs de concurrencia modernos en <strong>Java</strong>, como <strong>ExecutorService</strong> o <strong>CompletableFuture</strong>, trabajan con objetos <code>Runnable</code> o <code>Callable</code> (<strong>una variante de Runnable que permite devolver un valor</strong>) en lugar de instancias de la clase Thread.</p>
+</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">import</span><span style="color:#24292E"> java.util.concurrent.ExecutorService;</span></span>
+<span class="line"><span style="color:#D73A49">import</span><span style="color:#24292E"> java.util.concurrent.Executors;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#D73A49"> implements</span><span style="color:#6F42C1"> Runnable</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> String nombre;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#24292E">(String </span><span style="color:#E36209">nombre</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#005CC5">        this</span><span style="color:#24292E">.nombre </span><span style="color:#D73A49">=</span><span style="color:#24292E"> nombre;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> run</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        for</span><span style="color:#24292E"> (</span><span style="color:#D73A49">int</span><span style="color:#24292E"> i </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 0</span><span style="color:#24292E">; i </span><span style="color:#D73A49">&lt;</span><span style="color:#005CC5"> 5</span><span style="color:#24292E">; i</span><span style="color:#D73A49">++</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">            System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(nombre </span><span style="color:#D73A49">+</span><span style="color:#032F62"> " - Contador: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> i);</span></span>
+<span class="line"><span style="color:#D73A49">            try</span><span style="color:#24292E"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">                Thread.</span><span style="color:#6F42C1">sleep</span><span style="color:#24292E">(</span><span style="color:#005CC5">500</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">            } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (InterruptedException </span><span style="color:#E36209">e</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">                System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(</span><span style="color:#032F62">"Error en la pausa del hilo: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> e.</span><span style="color:#6F42C1">getMessage</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">            }</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> EjemploRunnableExecutorService</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> main</span><span style="color:#24292E">(</span><span style="color:#D73A49">String</span><span style="color:#24292E">[] </span><span style="color:#E36209">args</span><span style="color:#24292E">) {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        MiTarea tarea1 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#24292E">(</span><span style="color:#032F62">"Tarea 1"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">        MiTarea tarea2 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#24292E">(</span><span style="color:#032F62">"Tarea 2"</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">        MiTarea tarea3 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#24292E">(</span><span style="color:#032F62">"Tarea 3"</span><span style="color:#24292E">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        ExecutorService executor </span><span style="color:#D73A49">=</span><span style="color:#24292E"> Executors.</span><span style="color:#6F42C1">newFixedThreadPool</span><span style="color:#24292E">(</span><span style="color:#005CC5">3</span><span style="color:#24292E">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        executor.</span><span style="color:#6F42C1">submit</span><span style="color:#24292E">(tarea1);</span></span>
+<span class="line"><span style="color:#24292E">        executor.</span><span style="color:#6F42C1">submit</span><span style="color:#24292E">(tarea2);</span></span>
+<span class="line"><span style="color:#24292E">        executor.</span><span style="color:#6F42C1">submit</span><span style="color:#24292E">(tarea3);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        executor.</span><span style="color:#6F42C1">shutdown</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<h3 id="ciclo-de-vida-de-un-thread-new">Ciclo de vida de un Thread: New</h3>
+<ul>
+<li>Esto es un <strong>Hilo</strong> que se ha creado pero aún no se ha iniciado con el método <code>start()</code>:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#24292E">Runnable runnable </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Tarea</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">Thread t </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(runnable);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">System.out.</span><span style="color:#6F42C1">printl</span><span style="color:#24292E">(t.</span><span style="color:#6F42C1">getState</span><span style="color:#24292E">()); </span><span style="color:#6A737D">// NEW  </span></span></code></pre>
+<h3 id="ciclo-de-vida-de-un-thread-runnable">Ciclo de vida de un Thread: Runnable</h3>
+<ul>
+<li>La siguiente parte es un <strong>RUNNABLE</strong> está en <strong>estado ejecutable</strong> se ha creado e iniciado con el <code>**start()**</code>:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#24292E">Runnable runnable </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Tarea</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">Thread t </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(runnable);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">t.</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">System.out.</span><span style="color:#6F42C1">printl</span><span style="color:#24292E">(t.</span><span style="color:#6F42C1">getState</span><span style="color:#24292E">()); </span><span style="color:#6A737D">// RUNNABLE</span></span></code></pre>
+<h3 id="ciclo-de-vida-de-un-thread-blocked">Ciclo de vida de un Thread: Blocked</h3>
+<ul>
+<li>El siguiente estado es <strong>BLOCKED</strong> cuando es elegible para ejecutarse.</li>
+<li>Es aquel que <strong>no puede continuar con su ejecución debido a que está esperando el acceso a un recurso compartido</strong> o la liberación de un bloqueo. <strong>Un hilo puede entrar en este estado en diferentes situaciones como cuando</strong>:
+<ul>
+<li>Espera <strong>adquirir un bloqueo para entrar a una sección sincronizada</strong>: Un hilo puede entrar en estado bloqueado <strong>cuando intenta ingresar a una sección de código sincronizado que ya está siendo ejecutada por otro hilo.</strong> En este caso, <strong>el hilo esperará hasta que el hilo que actualmente posee el bloqueo libere dicho recurso.</strong></li>
+<li>Espera a que otro hilo lo notifique: <strong>Un hilo puede entrar en estado bloqueado al llamar al método <code>wait()</code></strong> en un objeto. En este caso, <strong>el hilo esperará hasta que otro hilo llame al método</strong> <code>**notify()**</code> o <code>**notifyAll()**</code> en el mismo objeto.</li>
+</ul>
+</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> Contador</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#D73A49"> int</span><span style="color:#24292E"> cuenta;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> synchronized</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> incrementar</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#24292E">        cuenta</span><span style="color:#D73A49">++</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">        System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(</span><span style="color:#032F62">"Cuenta incrementada a: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> cuenta);</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> TareaIncremento</span><span style="color:#D73A49"> implements</span><span style="color:#6F42C1"> Runnable</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> Contador contador;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#6F42C1"> TareaIncremento</span><span style="color:#24292E">(Contador </span><span style="color:#E36209">contador</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#005CC5">        this</span><span style="color:#24292E">.contador </span><span style="color:#D73A49">=</span><span style="color:#24292E"> contador;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> run</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        for</span><span style="color:#24292E"> (</span><span style="color:#D73A49">int</span><span style="color:#24292E"> i </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 0</span><span style="color:#24292E">; i </span><span style="color:#D73A49">&lt;</span><span style="color:#005CC5"> 5</span><span style="color:#24292E">; i</span><span style="color:#D73A49">++</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">            contador.</span><span style="color:#6F42C1">incrementar</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">            try</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">                Thread.</span><span style="color:#6F42C1">sleep</span><span style="color:#24292E">(</span><span style="color:#005CC5">100</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">            } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (InterruptedException </span><span style="color:#E36209">e</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">                e.</span><span style="color:#6F42C1">printStackTrace</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">            }</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> EjemploBloqueoSincronizado</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> main</span><span style="color:#24292E">(</span><span style="color:#D73A49">String</span><span style="color:#24292E">[] </span><span style="color:#E36209">args</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">        Contador contador </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Contador</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">        TareaIncremento tarea1 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> TareaIncremento</span><span style="color:#24292E">(contador);</span></span>
+<span class="line"><span style="color:#24292E">        TareaIncremento tarea2 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> TareaIncremento</span><span style="color:#24292E">(contador);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        Thread hilo1 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(tarea1);</span></span>
+<span class="line"><span style="color:#24292E">        Thread hilo2 </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(tarea2);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        hilo1.</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">        hilo2.</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>En este ejemplo, tenemos una clase Contador con un método sincronizado <code>**incrementar()**</code>. La clase <code>**TareaIncremento**</code> implementa <code>**Runnable**</code> y en su método <code>**run()**</code> <strong>llama al método</strong> <code>**incrementar()**</code> de la instancia compartida de <code>**Contador**</code>. <strong>Al ejecutar dos instancias de</strong> <code>**TareaIncremento**</code> <strong>en paralelo, uno de los hilos podría quedar bloqueado</strong> al intentar ingresar al método <code>**incrementar()**</code> mientras el otro hilo ya está ejecutándolo.</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> Mensaje</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> String contenido;</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#D73A49"> boolean</span><span style="color:#24292E"> disponible </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> false</span><span style="color:#24292E">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> synchronized</span><span style="color:#24292E"> String </span><span style="color:#6F42C1">recibir</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        while</span><span style="color:#24292E"> (</span><span style="color:#D73A49">!</span><span style="color:#24292E">disponible) {</span></span>
+<span class="line"><span style="color:#D73A49">            try</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#6F42C1">                wait</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">            } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (InterruptedException </span><span style="color:#E36209">e</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">                e.</span><span style="color:#6F42C1">printStackTrace</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">            }</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">        disponible </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> false</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#6F42C1">        notifyAll</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">        return</span><span style="color:#24292E"> contenido;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> synchronized</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> enviar</span><span style="color:#24292E">(String </span><span style="color:#E36209">mensaje</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">        while</span><span style="color:#24292E"> (disponible) {</span></span>
+<span class="line"><span style="color:#D73A49">            try</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#6F42C1">                wait</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">            } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (InterruptedException </span><span style="color:#E36209">e</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">                e.</span><span style="color:#6F42C1">printStackTrace</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">            }</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">        contenido </span><span style="color:#D73A49">=</span><span style="color:#24292E"> mensaje;</span></span>
+<span class="line"><span style="color:#24292E">        disponible </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> true</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#6F42C1">        notifyAll</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> Emisor</span><span style="color:#D73A49"> implements</span><span style="color:#6F42C1"> Runnable</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> Mensaje mensaje;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#6F42C1"> Emisor</span><span style="color:#24292E">(Mensaje </span><span style="color:#E36209">mensaje</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#005CC5">        this</span><span style="color:#24292E">.mensaje </span><span style="color:#D73A49">=</span><span style="color:#24292E"> mensaje;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> run</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        String</span><span style="color:#24292E">[] mensajes </span><span style="color:#D73A49">=</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#032F62">            "Mensaje 1"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#032F62">            "Mensaje 2"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#032F62">            "Mensaje 3"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#032F62">            "Mensaje 4"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#032F62">            "Mensaje 5"</span></span>
+<span class="line"><span style="color:#24292E">        };</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">        for</span><span style="color:#24292E"> (String msg </span><span style="color:#D73A49">:</span><span style="color:#24292E"> mensajes) {</span></span>
+<span class="line"><span style="color:#24292E">            mensaje.</span><span style="color:#6F42C1">enviar</span><span style="color:#24292E">(msg);</span></span>
+<span class="line"><span style="color:#D73A49">            try</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">                Thread.</span><span style="color:#6F42C1">sleep</span><span style="color:#24292E">(</span><span style="color:#005CC5">500</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">            } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (InterruptedException </span><span style="color:#E36209">e</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">                e.</span><span style="color:#6F42C1">printStackTrace</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">            }</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> Receptor</span><span style="color:#D73A49"> implements</span><span style="color:#6F42C1"> Runnable</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> Mensaje mensaje;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#6F42C1"> Receptor</span><span style="color:#24292E">(Mensaje </span><span style="color:#E36209">mensaje</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#005CC5">        this</span><span style="color:#24292E">.mensaje </span><span style="color:#D73A49">=</span><span style="color:#24292E"> mensaje;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> run</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        for</span><span style="color:#24292E"> (</span><span style="color:#D73A49">int</span><span style="color:#24292E"> i </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 0</span><span style="color:#24292E">; i </span><span style="color:#D73A49">&lt;</span><span style="color:#005CC5"> 5</span><span style="color:#24292E">; i</span><span style="color:#D73A49">++</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">            String msgRecibido </span><span style="color:#D73A49">=</span><span style="color:#24292E"> mensaje.</span><span style="color:#6F42C1">recibir</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">            System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(</span><span style="color:#032F62">"Mensaje recibido: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> msgRecibido);</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> EjemploBloqueoNotificacion</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> main</span><span style="color:#24292E">(</span><span style="color:#D73A49">String</span><span style="color:#24292E">[] </span><span style="color:#E36209">args</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">        Mensaje mensaje </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Mensaje</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">        Emisor emisor </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Emisor</span><span style="color:#24292E">(mensaje);</span></span>
+<span class="line"><span style="color:#24292E">        Receptor receptor </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Receptor</span><span style="color:#24292E">(mensaje);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        Thread hiloEmisor </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(emisor);</span></span>
+<span class="line"><span style="color:#24292E">        Thread hiloReceptor </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(receptor);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        hiloEmisor.</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">        hiloReceptor.</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>En este ejemplo, tenemos una clase <code>Mensaje</code> que contiene un método sincronizado <code>**enviar()**</code> y un método sincronizado <code>**recibir(**)</code>. Estos métodos hacen uso de <code>**wait()**</code> y <code>**notifyAll()**</code> para coordinar la comunicación entre un emisor y un receptor. El emisor envía mensajes y el receptor los recibe.</p>
+<p>La clase <code>**Emisor**</code> implementa <code>**Runnable**</code> y, en su método <code>**run()</code>,** envía mensajes a través del objeto compartido <code>**Mensaje**</code>. Por otro lado, la clase <code>**Receptor**</code> también implementa <code>**Runnable**</code> y, en su método <code>**run()**</code>, recibe los mensajes enviados por el <code>**Emisor**</code>.</p>
+<p>Cuando se ejecutan los hilos de <code>**Emisor**</code> y <code>**Receptor**</code> en paralelo, los hilos pueden entrar en estado bloqueado al llamar al método <code>**wait()**</code> si están esperando una notificación para continuar su ejecución. Por ejemplo, el <code>**Receptor**</code> podría quedar bloqueado al llamar al método <code>**recibir()**</code> si no hay mensajes disponibles, mientras que el <code>**Emisor**</code> podría quedar bloqueado al llamar al método <code>**enviar()**</code> si el <code>**Receptor**</code> aún no ha recibido el mensaje anterior. En ambos casos, los hilos continuarán su ejecución una vez que reciban la notificación correspondiente a través del método <code>**notifyAll()**</code>.</p>
+<h3 id="ciclo-de-vida-de-un-thread-waiting">Ciclo de vida de un Thread: Waiting</h3>
+<ul>
+<li>Un hilo está en estado <strong><strong><strong><strong><strong>WAITING</strong></strong></strong></strong></strong> cuando está esperando que otro hilo realice una acción en particular.</li>
+<li>Un hilo puede entrar en este estado llamando a cualquiera de los dos métodos <code>**wait()**</code> y <code>**join()**</code></li>
+<li>Estos métodos se utilizan para sincronizar la ejecución de múltiples hilos, a menudo cuando un hilo depende del resultado o la finalización de otro hilo.</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> Mensaje</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> String contenido;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> synchronized</span><span style="color:#24292E"> String </span><span style="color:#6F42C1">recibir</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        while</span><span style="color:#24292E"> (contenido </span><span style="color:#D73A49">==</span><span style="color:#005CC5"> null</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">            try</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#6F42C1">                wait</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">            } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (InterruptedException </span><span style="color:#E36209">e</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">                System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(</span><span style="color:#032F62">"Error en la espera del hilo: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> e.</span><span style="color:#6F42C1">getMessage</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">            }</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">        String mensaje </span><span style="color:#D73A49">=</span><span style="color:#24292E"> contenido;</span></span>
+<span class="line"><span style="color:#24292E">        contenido </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> null</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#6F42C1">        notify</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">        return</span><span style="color:#24292E"> mensaje;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> synchronized</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> enviar</span><span style="color:#24292E">(String </span><span style="color:#E36209">mensaje</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">        while</span><span style="color:#24292E"> (contenido </span><span style="color:#D73A49">!=</span><span style="color:#005CC5"> null</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#D73A49">            try</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#6F42C1">                wait</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">            } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (InterruptedException </span><span style="color:#E36209">e</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">                System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(</span><span style="color:#032F62">"Error en la espera del hilo: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> e.</span><span style="color:#6F42C1">getMessage</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">            }</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">        contenido </span><span style="color:#D73A49">=</span><span style="color:#24292E"> mensaje;</span></span>
+<span class="line"><span style="color:#6F42C1">        notify</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> Emisor</span><span style="color:#D73A49"> implements</span><span style="color:#6F42C1"> Runnable</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> Mensaje mensaje;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#6F42C1"> Emisor</span><span style="color:#24292E">(Mensaje </span><span style="color:#E36209">mensaje</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#005CC5">        this</span><span style="color:#24292E">.mensaje </span><span style="color:#D73A49">=</span><span style="color:#24292E"> mensaje;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> run</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        String</span><span style="color:#24292E">[] mensajes </span><span style="color:#D73A49">=</span><span style="color:#24292E"> {</span><span style="color:#032F62">"Hola"</span><span style="color:#24292E">, </span><span style="color:#032F62">"¿Cómo estás?"</span><span style="color:#24292E">, </span><span style="color:#032F62">"Hasta luego"</span><span style="color:#24292E">};</span></span>
+<span class="line"><span style="color:#D73A49">        for</span><span style="color:#24292E"> (String m </span><span style="color:#D73A49">:</span><span style="color:#24292E"> mensajes) {</span></span>
+<span class="line"><span style="color:#24292E">            mensaje.</span><span style="color:#6F42C1">enviar</span><span style="color:#24292E">(m);</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> Receptor</span><span style="color:#D73A49"> implements</span><span style="color:#6F42C1"> Runnable</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> Mensaje mensaje;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#6F42C1"> Receptor</span><span style="color:#24292E">(Mensaje </span><span style="color:#E36209">mensaje</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#005CC5">        this</span><span style="color:#24292E">.mensaje </span><span style="color:#D73A49">=</span><span style="color:#24292E"> mensaje;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> run</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        for</span><span style="color:#24292E"> (</span><span style="color:#D73A49">int</span><span style="color:#24292E"> i </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 0</span><span style="color:#24292E">; i </span><span style="color:#D73A49">&lt;</span><span style="color:#005CC5"> 3</span><span style="color:#24292E">; i</span><span style="color:#D73A49">++</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">            String m </span><span style="color:#D73A49">=</span><span style="color:#24292E"> mensaje.</span><span style="color:#6F42C1">recibir</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">            System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(</span><span style="color:#032F62">"Mensaje recibido: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> m);</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> EjemploWaiting</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> main</span><span style="color:#24292E">(</span><span style="color:#D73A49">String</span><span style="color:#24292E">[] </span><span style="color:#E36209">args</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">        Mensaje mensaje </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Mensaje</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">        new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(</span><span style="color:#D73A49">new</span><span style="color:#6F42C1"> Emisor</span><span style="color:#24292E">(mensaje)).</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#D73A49">        new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(</span><span style="color:#D73A49">new</span><span style="color:#6F42C1"> Receptor</span><span style="color:#24292E">(mensaje)).</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>En este ejemplo, la clase <strong><code>Mensaje</code></strong> tiene dos métodos sincronizados, <strong><code>enviar()</code></strong> y <strong><code>recibir()</code></strong>, que utilizan <strong><code>Object.wait()</code></strong> y <strong><code>Object.notify()</code></strong> para coordinar la comunicación entre un hilo emisor y un hilo receptor. Cuando un hilo llama a <strong><code>recibir()</code></strong>, espera hasta que haya un mensaje disponible (contenido != null). De manera similar, cuando un hilo llama a <strong><code>enviar()</code></strong>, espera hasta que el mensaje anterior haya sido recibido (contenido == null). Cuando se cumplen estas condiciones, los hilos utilizan <strong><code>Object.notify()</code></strong> para notificar al otro hilo que puede continuar con su ejecución. En este caso, los hilos entran en estado “waiting” cuando llaman a <code>**Object.wait()</code>** y salen de este estado cuando otro hilo llma <strong><code>Object.notify()</code></strong> sobre el mismo objeto.</p>
+<p>El método principal en la clase <strong><code>EjemploWaiting</code></strong> crea un objeto <strong><code>Mensaje</code></strong>, un hilo <strong><code>Emisor</code></strong> y un hilo <strong><code>Receptor</code></strong>. El hilo emisor envía mensajes al hilo receptor a través del objeto <strong><code>Mensaje</code></strong>. El hilo receptor recibe y muestra los mensajes enviados por el hilo emisor. Ambos hilos se ejecutan en paralelo, y utilizan el objeto <strong><code>Mensaje</code></strong> para coordinar sus acciones.</p>
+<p>En resumen, el estado “waiting” es útil cuando necesitas sincronizar la ejecución de múltiples hilos que dependen unos de otros. En el ejemplo presentado, se utilizan los métodos <strong><code>Object.wait()</code></strong> y <strong><code>Object.notify()</code></strong> para lograr esta sincronización, poniendo un hilo en espera hasta que otro hilo notifique su disponibilidad para continuar.</p>
+<h3 id="ciclo-de-vida-de-un-thread-terminated">Ciclo de vida de un Thread: Terminated.</h3>
+<ul>
+<li>Es un hilo que ha completado su ejecución. En otras palabras, el hilo ha finalizado su tarea y ya no está activido ni listo para ejecutar nada.</li>
+<li>Un hilo entra en terminated por las siguientes razones:
+<ol>
+<li>El método <strong><code>run()</code></strong> del hilo ha finalizado normalmente, es decir, ha ejecutado todas las instrucciones contenidas en él y ha llegado al final del método.</li>
+<li>Ha ocurrido una excepción no controlada en el método <strong><code>run()</code></strong> y no se ha manejado mediante un bloque <strong><code>try-catch</code></strong>. En este caso, el hilo se detiene abruptamente y entra en estado TERMINATED.</li>
+<li>El hilo ha sido interrumpido por otro hilo mediante la llamada al método <strong><code>interrupt()</code></strong> y el hilo interrumpido ha manejado la interrupción, finalizando su ejecución.</li>
+</ol>
+</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#D73A49"> implements</span><span style="color:#6F42C1"> Runnable</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    private</span><span style="color:#24292E"> String nombre;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#24292E">(String </span><span style="color:#E36209">nombre</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#005CC5">        this</span><span style="color:#24292E">.nombre </span><span style="color:#D73A49">=</span><span style="color:#24292E"> nombre;</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    @</span><span style="color:#D73A49">Override</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> run</span><span style="color:#24292E">() {</span></span>
+<span class="line"><span style="color:#D73A49">        for</span><span style="color:#24292E"> (</span><span style="color:#D73A49">int</span><span style="color:#24292E"> i </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 0</span><span style="color:#24292E">; i </span><span style="color:#D73A49">&lt;</span><span style="color:#005CC5"> 5</span><span style="color:#24292E">; i</span><span style="color:#D73A49">++</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">            System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(nombre </span><span style="color:#D73A49">+</span><span style="color:#032F62"> " - Contador: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> i);</span></span>
+<span class="line"><span style="color:#D73A49">            try</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">                Thread.</span><span style="color:#6F42C1">sleep</span><span style="color:#24292E">(</span><span style="color:#005CC5">500</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#24292E">            } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (InterruptedException </span><span style="color:#E36209">e</span><span style="color:#24292E">) {</span></span>
+<span class="line"><span style="color:#24292E">                System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(nombre </span><span style="color:#D73A49">+</span><span style="color:#032F62"> " fue interrumpido. "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> e.</span><span style="color:#6F42C1">getMessage</span><span style="color:#24292E">());</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">                return</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">            }</span></span>
+<span class="line"><span style="color:#24292E">        }</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">public</span><span style="color:#D73A49"> class</span><span style="color:#6F42C1"> EjemploTerminated</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    public</span><span style="color:#D73A49"> static</span><span style="color:#D73A49"> void</span><span style="color:#6F42C1"> main</span><span style="color:#24292E">(</span><span style="color:#D73A49">String</span><span style="color:#24292E">[] </span><span style="color:#E36209">args</span><span style="color:#24292E">) </span><span style="color:#D73A49">throws</span><span style="color:#24292E"> InterruptedException {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        MiTarea tarea </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> MiTarea</span><span style="color:#24292E">(</span><span style="color:#032F62">"Tarea 1"</span><span style="color:#24292E">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        Thread hilo </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Thread</span><span style="color:#24292E">(tarea);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        hilo.</span><span style="color:#6F42C1">start</span><span style="color:#24292E">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        Thread.</span><span style="color:#6F42C1">sleep</span><span style="color:#24292E">(</span><span style="color:#005CC5">2000</span><span style="color:#24292E">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        hilo.</span><span style="color:#6F42C1">interrupt</span><span style="color:#24292E">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        hilo.</span><span style="color:#6F42C1">join</span><span style="color:#24292E">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">        System.out.</span><span style="color:#6F42C1">println</span><span style="color:#24292E">(</span><span style="color:#032F62">"Estado del hilo: "</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> hilo.</span><span style="color:#6F42C1">getState</span><span style="color:#24292E">());</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<p>En este ejemplo, creamos una tarea llamada “MiTarea” que implementa la interfaz Runnable. El método <strong><code>run()</code></strong> de la tarea realiza un bucle con un contador hasta 5 y duerme el hilo por 500 milisegundos en cada iteración.</p>
+<p>En el método <strong><code>main</code></strong>, creamos un hilo con la tarea y lo iniciamos. Después de esperar 2 segundos, interrumpimos el hilo llamando al método <strong><code>interrupt()</code></strong>. Dentro del método <strong><code>run()</code></strong>, manejamos la interrupción en el bloque <strong><code>catch</code></strong> y salimos del método <strong><code>run()</code></strong> usando <strong><code>return</code></strong>. Luego, esperamos a que el hilo termine su ejecución con el método <strong><code>join()</code></strong> y mostramos el estado del hilo, que debería ser “TERMINATED”.</p>
+<h2 id="en-conlusión">En conlusión:</h2>
+<p>Para concluir con el articulo te brindo una serie de recomendaciones a la hora de implementar hilos en tu código de Java.</p>
+<p>La concurrencia y la programación multihilo son técnicas poderosas para mejorar el rendimiento y la capacidad de respuesta de las aplicaciones. Sin embargo, su uso también puede generar desafíos únicos. Aquí te presentamos algunas buenas prácticas y consideraciones a tener en cuenta al utilizar hilos y concurrencia en tus proyectos Java.</p>
+<ol>
+<li><strong>Evitar la herencia de la clase Thread</strong>: En lugar de extender la clase Thread, implementa la interfaz Runnable o Callable. Esto te proporciona un diseño más desacoplado y flexible, evitando problemas de herencia múltiple y facilitando la integración con frameworks modernos.</li>
+<li><strong>Utilizar ExecutorService</strong>: En lugar de gestionar manualmente la creación y terminación de hilos, utiliza el framework ExecutorService. Este facilita el control de la concurrencia, la reutilización de hilos y la gestión de recursos del sistema.</li>
+<li><strong>Sincronizar el acceso a recursos compartidos</strong>: Asegúrate de sincronizar el acceso a recursos compartidos entre hilos para evitar condiciones de carrera y comportamientos indeterminados. Puedes utilizar bloques <strong><code>synchronized</code></strong>, clases de bloqueo (<strong><code>Lock</code></strong>, <strong><code>ReentrantLock</code></strong>) o estructuras de datos concurrentes (<strong><code>ConcurrentHashMap</code></strong>, <strong><code>CopyOnWriteArrayList</code></strong>, etc.).</li>
+<li><strong>Evitar bloqueos (deadlocks)</strong>: Un bloqueo ocurre cuando dos o más hilos esperan eternamente el recurso que otro hilo tiene bloqueado. Para prevenirlos, asegúrate de adquirir bloqueos en un orden consistente y utilizar mecanismos de bloqueo con tiempo de espera (<strong><code>tryLock()</code></strong>).</li>
+<li><strong>Minimizar la contención</strong>: Cuando sea posible, reduce la contención entre hilos utilizando estructuras de datos locales a cada hilo, dividiendo tareas en unidades independientes o utilizando estructuras de datos concurrentes optimizadas.</li>
+<li><strong>Manejar adecuadamente las interrupciones</strong>: Al utilizar el método <strong><code>Thread.sleep()</code></strong>, <strong><code>Thread.join()</code></strong> o <strong><code>Lock.lockInterruptibly()</code></strong>, asegúrate de manejar la excepción <strong><code>InterruptedException</code></strong> correctamente. En general, debes propagar la interrupción llamando a <strong><code>Thread.currentThread().interrupt()</code></strong> o finalizar el hilo de forma ordenada.</li>
+<li><strong>No utilizar <code>Thread.stop()</code>, <code>Thread.suspend()</code> o <code>Thread.resume()</code></strong>: Estos métodos están en desuso y pueden causar problemas de consistencia y bloqueos. En su lugar, utiliza mecanismos de interrupción y control de estados para finalizar y gestionar hilos.</li>
+<li><strong>Prestar atención al rendimiento</strong>: El uso de concurrencia no garantiza automáticamente un mejor rendimiento. Utiliza herramientas de monitoreo y perfiles de rendimiento para analizar el comportamiento de tu aplicación y ajustar la cantidad de hilos o la estrategia de concurrencia según sea necesario.</li>
+<li><strong>Probar y depurar rigurosamente</strong>: La programación concurrente puede generar comportamientos indeterminados y difíciles de reproducir. Utiliza herramientas de depuración de hilos y pruebas unitarias para asegurarte de que tu código concurrente funciona correctamente en diferentes escenarios.</li>
+<li><strong>Documentar y comunicar</strong>: Asegúrate de documentar adecuadamente el uso de hilos y concurrencia en tu código. Esto facilitará la comprensión, el mantenimiento y la colaboración con otros desarrolladores. Incluye comentarios en el código y documentación técnica para explicar la lógica y las decisiones de diseño.</li>
+<li><strong>Preferir la inmutabilidad</strong>: Utiliza objetos inmutables siempre que sea posible. Los objetos inmutables son aquellos cuyo estado no puede ser modificado una vez creados. Al no permitir cambios en su estado, se eliminan problemas de sincronización y condiciones de carrera.</li>
+<li><strong>Usar APIs modernas de concurrencia</strong>: Java ofrece APIs modernas y avanzadas para la programación concurrente, como <strong><code>CompletableFuture</code></strong>, <strong><code>ForkJoinPool</code></strong> y <strong><code>StampedLock</code></strong>. Estudia y utiliza estas APIs cuando sea apropiado, ya que suelen ser más eficientes y flexibles que las soluciones más antiguas.</li>
+<li><strong>Capacitación y actualización constante</strong>: La programación concurrente y multihilo es un campo en constante evolución. Mantente al tanto de las novedades y actualizaciones en las APIs y frameworks de concurrencia, así como de las mejores prácticas emergentes en la industria. Participar en cursos, conferencias y comunidades en línea te ayudará a mantenerte actualizado y mejorar tus habilidades en esta área.</li>
+</ol>
+</article></main><footer data-astro-cid-jo6i4kqk><div class="wrap" data-astro-cid-jo6i4kqk><span class="label" data-astro-cid-jo6i4kqk>romeralvarez.me</span><span class="links" data-astro-cid-jo6i4kqk><a class="label" href="https://github.com/RomerEnr" rel="me" data-astro-cid-jo6i4kqk>GitHub</a><a class="label" href="https://www.linkedin.com/in/romer-alvarez-martinez" rel="me" data-astro-cid-jo6i4kqk>LinkedIn</a><a class="label" href="mailto:romeralvareziv@gmail.com" data-astro-cid-jo6i4kqk>Email</a></span><span class="label" data-astro-cid-jo6i4kqk>Alessandria · Remoto</span></div></footer></body></html>

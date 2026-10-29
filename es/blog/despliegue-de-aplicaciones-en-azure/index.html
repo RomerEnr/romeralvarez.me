@@ -1,0 +1,483 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Despliegue de aplicaciones básicas en Azure Kuberentes Service (AKS) · Romer Alvarez</title><meta name="description" content="Aprende a desplegar aplicaciones de manera eficiente en Azure Kubernetes Service (AKS). Esta guía paso a paso te llevará desde la creación de un Azure Container Registry hasta la implementación de imágenes de contenedores en AKS, ilustrado con ejemplos prácticos y diagramas explicativos."><link rel="canonical" href="https://romeralvarez.me/es/blog/despliegue-de-aplicaciones-en-azure/"><link rel="alternate" hreflang="es" href="https://romeralvarez.me/es/blog/despliegue-de-aplicaciones-en-azure/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="Romer Alvarez · Blog" href="/rss.xml"><meta name="theme-color" content="#f2f3f5"><meta property="og:type" content="article"><meta property="og:title" content="Despliegue de aplicaciones básicas en Azure Kuberentes Service (AKS) · Romer Alvarez"><meta property="og:description" content="Aprende a desplegar aplicaciones de manera eficiente en Azure Kubernetes Service (AKS). Esta guía paso a paso te llevará desde la creación de un Azure Container Registry hasta la implementación de imágenes de contenedores en AKS, ilustrado con ejemplos prácticos y diagramas explicativos."><meta property="og:url" content="https://romeralvarez.me/es/blog/despliegue-de-aplicaciones-en-azure/"><meta property="og:locale" content="es_ES"><meta property="og:site_name" content="Romer Alvarez"><meta name="twitter:card" content="summary"><style>@font-face{font-family:"Funnel Display-12ca865bf053342f";src:url("/_astro/fonts/6d848bd7c4d66300.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"Funnel Display-12ca865bf053342f fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:normal;size-adjust:107.8583%;ascent-override:92.7142%;descent-override:23.1786%;line-gap-override:0%;}:root{--font-display:"Funnel Display-12ca865bf053342f","Funnel Display-12ca865bf053342f fallback: Arial",sans-serif;}</style><link rel="preload" href="/_astro/fonts/6d848bd7c4d66300.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/b0f574a27e2e8d39.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:400;font-style:italic;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/b0f574a27e2e8d39.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:italic;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/53c9791758e212af.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:400;font-style:normal;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0";src:url("/_astro/fonts/53c9791758e212af.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:400;font-style:italic;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:italic;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:400;font-style:normal;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}@font-face{font-family:"Funnel Sans-3bd738e10bbce5f0 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:normal;size-adjust:100.5681%;ascent-override:99.4351%;descent-override:24.8588%;line-gap-override:0%;}:root{--font-sans:"Funnel Sans-3bd738e10bbce5f0","Funnel Sans-3bd738e10bbce5f0 fallback: Arial",sans-serif;}</style><style>@font-face{font-family:"Geist Mono-1c9b647e0ff632a6";src:url("/_astro/fonts/ba5d61c96960c427.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:italic;}@font-face{font-family:"Geist Mono-1c9b647e0ff632a6";src:url("/_astro/fonts/4885f00022c710c3.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"Geist Mono-1c9b647e0ff632a6 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:italic;size-adjust:134.5893%;ascent-override:74.6716%;descent-override:21.9185%;line-gap-override:0%;}@font-face{font-family:"Geist Mono-1c9b647e0ff632a6 fallback: Arial";src:local("Arial");font-display:swap;font-weight:500;font-style:normal;size-adjust:134.5893%;ascent-override:74.6716%;descent-override:21.9185%;line-gap-override:0%;}:root{--font-mono:"Geist Mono-1c9b647e0ff632a6","Geist Mono-1c9b647e0ff632a6 fallback: Arial",sans-serif;}</style><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Despliegue de aplicaciones básicas en Azure Kuberentes Service (AKS)","description":"Aprende a desplegar aplicaciones de manera eficiente en Azure Kubernetes Service (AKS). Esta guía paso a paso te llevará desde la creación de un Azure Container Registry hasta la implementación de imágenes de contenedores en AKS, ilustrado con ejemplos prácticos y diagramas explicativos.","datePublished":"2023-11-30T21:19:00.000Z","dateModified":"2023-11-30T21:19:00.000Z","inLanguage":"es","url":"https://romeralvarez.me/es/blog/despliegue-de-aplicaciones-en-azure/","author":{"@type":"Person","name":"Romer Alvarez","url":"https://romeralvarez.me"}}</script><link rel="stylesheet" href="/_astro/Base.DsERtDe_.css"><style>main[data-astro-cid-g5songws]{padding-block:48px 96px}.back[data-astro-cid-g5songws]{text-decoration:none}.back[data-astro-cid-g5songws]:hover{color:var(--pipeline-ink)}header[data-astro-cid-g5songws]{max-width:22ch;margin:40px 0 48px}header[data-astro-cid-g5songws] h1[data-astro-cid-g5songws]{max-width:none;margin-top:16px;font-size:clamp(40px,5.6vw,76px);line-height:1}header[data-astro-cid-g5songws]{max-width:900px}.tags[data-astro-cid-g5songws]{flex-wrap:wrap;gap:8px;margin:24px 0 0;padding:0;list-style:none;display:flex}.tags[data-astro-cid-g5songws] li[data-astro-cid-g5songws]{font:500 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--pipeline-soft);color:var(--pipeline-ink);border-radius:6px;padding:8px 10px}.prose[data-astro-cid-g5songws]{max-width:720px;font-size:18px;line-height:1.7}.prose[data-astro-cid-g5songws] h1,.prose[data-astro-cid-g5songws] h2,.prose[data-astro-cid-g5songws] h3,.prose[data-astro-cid-g5songws] h4{font-family:var(--display);letter-spacing:-.02em;margin:2em 0 .6em;font-weight:500;line-height:1.15}.prose[data-astro-cid-g5songws] h1,.prose[data-astro-cid-g5songws] h2{font-size:clamp(28px,3vw,36px)}.prose[data-astro-cid-g5songws] h3{font-size:24px}.prose[data-astro-cid-g5songws] h4{font-size:20px}.prose[data-astro-cid-g5songws] :is(h1,h2,h3,h4) strong{font-weight:inherit}.prose[data-astro-cid-g5songws]>:first-child{margin-top:0}.prose[data-astro-cid-g5songws] p,.prose[data-astro-cid-g5songws] ul,.prose[data-astro-cid-g5songws] ol{margin:0 0 1.2em}.prose[data-astro-cid-g5songws] li{margin:.3em 0}.prose[data-astro-cid-g5songws] a{color:var(--pipeline-ink);text-underline-offset:3px}.prose[data-astro-cid-g5songws] img{background:var(--surface);border-radius:12px;max-width:100%;height:auto;margin:2em auto;display:block}.prose[data-astro-cid-g5songws] blockquote{border-left:4px solid var(--pipeline);color:var(--ink-muted);margin:1.6em 0;padding:4px 0 4px 20px}.prose[data-astro-cid-g5songws] :not(pre)>code{font:500 .88em var(--mono);background:var(--surface);border-radius:6px;padding:2px 6px}.prose[data-astro-cid-g5songws] pre{font:500 14px/1.6 var(--mono);border:1px solid var(--line);border-radius:12px;margin:1.6em 0;padding:20px;overflow-x:auto}.prose[data-astro-cid-g5songws] table{border-collapse:collapse;width:100%;margin:1.6em 0;font-size:16px;display:block;overflow-x:auto}.prose[data-astro-cid-g5songws] th,.prose[data-astro-cid-g5songws] td{border-bottom:1px solid var(--line);text-align:left;padding:10px 12px}.prose[data-astro-cid-g5songws] hr{border:0;border-top:1px solid var(--line);margin:3em 0}
+</style></head><body><header data-astro-cid-nen7h5rs><div class="wrap" data-astro-cid-nen7h5rs><a class="brand" href="/es/" data-astro-cid-nen7h5rs>Romer Alvarez</a><nav class="actions" aria-label="Menú principal" data-astro-cid-nen7h5rs><div class="langs" role="group" aria-label="Idioma" data-astro-cid-nen7h5rs><a href="/" hreflang="en" lang="en" data-astro-cid-nen7h5rs>EN</a><a href="/it/" hreflang="it" lang="it" data-astro-cid-nen7h5rs>IT</a><a href="/es/blog/despliegue-de-aplicaciones-en-azure/" hreflang="es" lang="es" aria-current="true" data-astro-cid-nen7h5rs>ES</a></div><details class="menu" data-astro-cid-nen7h5rs><summary class="pill dark" data-astro-cid-nen7h5rs>Menú</summary><ul data-astro-cid-nen7h5rs><li data-astro-cid-nen7h5rs><a href="/es/#services" data-astro-cid-nen7h5rs>Qué hago</a></li><li data-astro-cid-nen7h5rs><a href="/es/#projects" data-astro-cid-nen7h5rs>Proyectos</a></li><li data-astro-cid-nen7h5rs><a href="/es/blog/" data-astro-cid-nen7h5rs>Blog</a></li><li data-astro-cid-nen7h5rs><a href="/es/#contact" data-astro-cid-nen7h5rs>Contacto</a></li></ul></details><a class="pill cta" href="/es/#contact" data-astro-cid-nen7h5rs>Hablemos</a></nav></div></header><script type="module">var e=document.querySelector(`details.menu`);document.addEventListener(`click`,t=>{e?.open&&(!e.contains(t.target)||t.target.closest(`a`))&&(e.open=!1)});</script><main class="wrap flowing" data-astro-cid-g5songws><a class="back label" href="/es/blog/" data-astro-cid-g5songws>← Todos los artículos</a><header data-astro-cid-g5songws><time class="label" datetime="2023-11-30T21:19:00.000Z" data-astro-cid-g5songws>30 de noviembre de 2023</time><h1 data-astro-cid-g5songws>Despliegue de aplicaciones básicas en Azure Kuberentes Service (AKS)</h1><ul class="tags" data-astro-cid-g5songws><li data-astro-cid-g5songws>Azure</li><li data-astro-cid-g5songws>Cloud</li><li data-astro-cid-g5songws>Kubernetes</li><li data-astro-cid-g5songws>DevOps</li></ul></header><article class="prose" data-astro-cid-g5songws><h1 id="despliegue-de-aplicaciones-en-azure-kubernetes-service-aks-introducción-básica">Despliegue de Aplicaciones en Azure Kubernetes Service (AKS): Introducción básica.</h1>
+<h2 id="introducción">Introducción</h2>
+<p>En este artículo exploraremos cómo desplegar aplicaciones utilizando Azure Kubernetes Service (AKS). Cubriremos desde la creación de un <strong>Azure Container Registry</strong> hasta el despliegue de imágenes de contenedores en AKS, ilustrado con ejemplos prácticos y diagramas explicativos.</p>
+<p><img src="/assets/Azure/acr-aks.png" alt="Relation between ACR and AKS"></p>
+<p>Estaremos realizando el <a href="https://learn.microsoft.com/en-gb/training/modules/project-deploy-applications-azure-kubernetes-service/2-exercise-provision-azure-container-registry-azure-kubernet" target="_blank">ejercicio propuesto por Microsoft</a>.</p>
+<p>Se compone de 4 ejercicios:</p>
+<ul>
+<li>Ejercicio 1: Aprovisionamiento de <strong>Azure Container Registry (ACR)</strong> y <strong>Azure Kubernetes Service (AKS).</strong></li>
+<li>Ejercicio 2: Crear imágenes de contenedores <strong>Linux</strong> y <strong>Windows</strong> y almacenarlas en <strong>Azure Container Registry.</strong></li>
+<li>Ejercicio 3: Desplegar contenedores en <strong>Azure Kubernetes Service.</strong></li>
+<li>Ejercicio 4: Revisar el despliegue y <strong>eliminar</strong> todos los recursos.</li>
+</ul>
+<h2 id="ejercicio-1-aprovisionamiento-de-azure-container-registry-acr-y-azure-kubernetes-service-aks">Ejercicio 1: Aprovisionamiento de Azure Container Registry (ACR) y Azure Kubernetes Service (AKS)</h2>
+<h3 id="paso-1-crear-un-azure-container-registry-acr">Paso 1: Crear un Azure Container Registry (ACR)</h3>
+<ol>
+<li>Iniciar sesión en el <a href="https://portal.azure.com/">portal de Azure</a>.</li>
+<li>Buscar en la barra de búsqueda <code>Container Registries</code>. Haz clic en <code>+ Create</code> y completa los siguientes datos:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Configuración</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subscription</td>
+<td>Tu suscripción de Azure</td>
+</tr>
+<tr>
+<td>Resource Group</td>
+<td>acr-01-RG</td>
+</tr>
+<tr>
+<td>Registry name</td>
+<td>Debe ser un nombre único, en nuestro será romeralvarezme</td>
+</tr>
+<tr>
+<td>Region</td>
+<td>Europe West</td>
+</tr>
+<tr>
+<td>Availability zones</td>
+<td>Ninguno</td>
+</tr>
+<tr>
+<td>SKU</td>
+<td>Basic</td>
+</tr>
+</tbody>
+</table>
+<h3 id="paso-2-crear-una-azure-virtual-network-and-an-aks-cluster">Paso 2: Crear una Azure Virtual Network and an AKS Cluster</h3>
+<p>Creación de una red virtual y un clúster de AKS.</p>
+<ol>
+<li>Buscar en la barra de búsqueda <code>Virtual Network</code>. Haz clic en <code>+ Create</code> y completa los siguientes datos:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Configuración</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subscription</td>
+<td>Tu suscripción de Azure</td>
+</tr>
+<tr>
+<td>Resource Group</td>
+<td>aks-01-RG</td>
+</tr>
+<tr>
+<td>Virtual network name</td>
+<td>vnet-01</td>
+</tr>
+<tr>
+<td>Region</td>
+<td>[La misma región que antes]</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Avanza a través de las pestañas “Security” y acepta todo por defecto. Luego, “IP Addresses” y acepta todo por defecto asegurarse que el address space esté puesto en `10.0.0.0/16 y eliminar por la subred predeterminada.</li>
+<li>Selecciona <code>Review + Create</code> y luego <code>Create</code>.</li>
+</ul>
+<ol start="2">
+<li>Buscar en la barra de búsqueda <code>Kubernetes Service</code>. Haz clic en <code>+ Create</code> y completa los siguientes datos:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Configuración</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subscription</td>
+<td>Tu suscripción de Azure</td>
+</tr>
+<tr>
+<td>Resource Group</td>
+<td>aks-01-RG</td>
+</tr>
+<tr>
+<td>Cluster preset configuration</td>
+<td>Dev/Test</td>
+</tr>
+<tr>
+<td>Kubernetes cluster name</td>
+<td>aks-01</td>
+</tr>
+<tr>
+<td>Region</td>
+<td>[La misma región que antes]</td>
+</tr>
+<tr>
+<td>Availability zones</td>
+<td>Ninguno</td>
+</tr>
+<tr>
+<td>AKS pricing tier</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>Kubernetes version</td>
+<td>[Valor por defecto]</td>
+</tr>
+<tr>
+<td>Automatic upgrade</td>
+<td>Disabled</td>
+</tr>
+<tr>
+<td>Node size</td>
+<td>Standard B4ms</td>
+</tr>
+<tr>
+<td>Scale method</td>
+<td>Manual</td>
+</tr>
+<tr>
+<td>Node count</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>En la pestaña “Networking”, selecciona <code>Azure CNI</code> y elige la red virtual vnet-01.</li>
+<li>Crea una subred (aks-subnet) con el rango de direcciones <code>10.0.0.0/20</code>.</li>
+<li>Luego, hay que completar los siguientes datos:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Configuración</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cluster subnet</td>
+<td>aks-subnet (10.0.0.0/20)</td>
+</tr>
+<tr>
+<td>Kubernetes service address range</td>
+<td>172.16.0.0/22</td>
+</tr>
+<tr>
+<td>Kubernetes DNS service IP address</td>
+<td>172.16.3.254</td>
+</tr>
+<tr>
+<td>DNS name prefix</td>
+<td>aks-01-dns</td>
+</tr>
+<tr>
+<td>Enable private cluster</td>
+<td>Disabled</td>
+</tr>
+<tr>
+<td>Set authorized IP ranges</td>
+<td>Disabled</td>
+</tr>
+<tr>
+<td>Network policy</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<ol start="3">
+<li>Crearemos el Pool de Nodos Windows:</li>
+</ol>
+<ul>
+<li>En la ventana de “Node Pools”, agrega un nuevo pool de nodos para Windows, rellenando los siguientes datos:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Configuración</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node pool name</td>
+<td>w1pool</td>
+</tr>
+<tr>
+<td>Mode</td>
+<td>User</td>
+</tr>
+<tr>
+<td>OS type</td>
+<td>Windows</td>
+</tr>
+<tr>
+<td>Availability zone</td>
+<td>Ninguno</td>
+</tr>
+<tr>
+<td>Enable Azure spot instances</td>
+<td>Disabled</td>
+</tr>
+<tr>
+<td>Node size</td>
+<td>Standard B4s_v2</td>
+</tr>
+<tr>
+<td>Scale method</td>
+<td>Manual</td>
+</tr>
+<tr>
+<td>Node count</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Max pods per node</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Enable public IP per node</td>
+<td>Disabled</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>En la pestaña de <code>Integrations</code> seleccionaremos el Registry que hemos creado anteriormente, nos aseguraremos de desactivar <code>Azure Monitor</code> y <code>Azure Policy</code> y seleccionaremos <code>Review + Create</code> y luego <code>Create</code>.</li>
+</ol>
+<p>Ahora, esperaremos a que se aprovisionen los recursos, y podemos dar por concluido el ejercicio 1. Habremos completado lo siguiente:</p>
+<ul>
+<li>Se creó un Azure Container Registry (ACR) y se configuraron los detalles de la Red Virtual de Azure y un cluster de AKS.</li>
+<li>Se creó un pool de nodos de Windows para el clúster de AKS.</li>
+<li>Hemos asociado el Azure Container Registry (ACR) con el clúster de AKS.</li>
+</ul>
+<p>Y se nos quedaría algo de este estilo:
+<img src="/assets/Azure/acr-aks-connected.png" alt="ACR and AKS"></p>
+<h2 id="ejercicio-2-crear-imágenes-de-contenedores-linux-y-windows-y-almacenarlas-en-azure-container-registry">Ejercicio 2: Crear imágenes de contenedores Linux y Windows y almacenarlas en Azure Container Registry</h2>
+<p>En este ejercicio, crearemos imágenes de contenedores Linux y Windows y las almacenaremos en Azure Container Registry (ACR).</p>
+<h3 id="paso-1-configuración-del-entorno">Paso 1: Configuración del entorno</h3>
+<ul>
+<li>Accederemos a Azure Cloud Shell desde el portal de Azure y seleccionaremos <code>Bash</code> como shell.</li>
+<li>Crearemos ejecutaremos los siguientes comandos para crear un directorio y navegar a él:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">mkdir</span><span style="color:#032F62"> ~/image-l01</span></span>
+<span class="line"><span style="color:#005CC5">cd</span><span style="color:#032F62"> ~/image-l01</span></span></code></pre>
+<ul>
+<li>Crearemos el siguiente archivo de Javascript utilizando el editor que más nos guste, en mi caso <code>vim</code>:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">vim</span><span style="color:#032F62"> server.js</span></span></code></pre>
+<h3 id="paso-2-creación-de-archivos-para-el-proyecto-de-linux">Paso 2: Creación de archivos para el proyecto de Linux</h3>
+<ul>
+<li>Dentro del server.js pegaremos el siguiente código:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#D73A49">const</span><span style="color:#005CC5"> http</span><span style="color:#D73A49"> =</span><span style="color:#6F42C1"> require</span><span style="color:#24292E">(</span><span style="color:#032F62">'http'</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">const</span><span style="color:#005CC5"> port</span><span style="color:#D73A49"> =</span><span style="color:#005CC5"> 80</span></span>
+<span class="line"><span style="color:#D73A49">const</span><span style="color:#005CC5"> server</span><span style="color:#D73A49"> =</span><span style="color:#24292E"> http.</span><span style="color:#6F42C1">createServer</span><span style="color:#24292E">((</span><span style="color:#E36209">request</span><span style="color:#24292E">, </span><span style="color:#E36209">response</span><span style="color:#24292E">) </span><span style="color:#D73A49">=&gt;</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#24292E">  response.</span><span style="color:#6F42C1">writeHead</span><span style="color:#24292E">(</span><span style="color:#005CC5">200</span><span style="color:#24292E">, {</span><span style="color:#032F62">'Content-Type'</span><span style="color:#24292E">: </span><span style="color:#032F62">'text/plain'</span><span style="color:#24292E">})</span></span>
+<span class="line"><span style="color:#24292E">  response.</span><span style="color:#6F42C1">write</span><span style="color:#24292E">(</span><span style="color:#032F62">'Hello World from Node</span><span style="color:#005CC5">\n</span><span style="color:#032F62">'</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">  response.</span><span style="color:#6F42C1">end</span><span style="color:#24292E">(</span><span style="color:#032F62">'Version: '</span><span style="color:#D73A49"> +</span><span style="color:#24292E"> process.env.</span><span style="color:#005CC5">NODE_VERSION</span><span style="color:#D73A49"> +</span><span style="color:#032F62"> '</span><span style="color:#005CC5">\n</span><span style="color:#032F62">'</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#24292E">})</span></span>
+<span class="line"><span style="color:#24292E">server.</span><span style="color:#6F42C1">listen</span><span style="color:#24292E">(port)</span></span>
+<span class="line"><span style="color:#24292E">console.</span><span style="color:#6F42C1">log</span><span style="color:#24292E">(</span><span style="color:#032F62">`Server running at http://localhost: ${</span><span style="color:#24292E">port</span><span style="color:#032F62">}`</span><span style="color:#24292E">)</span></span></code></pre>
+<ul>
+<li>Crearemos el siguiente package.json de nuevo con nuestro editor favorito:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="json"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "name"</span><span style="color:#24292E">: </span><span style="color:#032F62">"helloworld"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "version"</span><span style="color:#24292E">: </span><span style="color:#032F62">"1.0.0"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "description"</span><span style="color:#24292E">: </span><span style="color:#032F62">"Sample app for ACR Build"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "main"</span><span style="color:#24292E">: </span><span style="color:#032F62">"server.js"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "scripts"</span><span style="color:#24292E">: {</span></span>
+<span class="line"><span style="color:#005CC5">    "test"</span><span style="color:#24292E">: </span><span style="color:#032F62">"echo </span><span style="color:#005CC5">\"</span><span style="color:#032F62">Error: no test specified</span><span style="color:#005CC5">\"</span><span style="color:#032F62"> &amp;&amp; exit 1"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">    "start"</span><span style="color:#24292E">: </span><span style="color:#032F62">"node server.js"</span></span>
+<span class="line"><span style="color:#24292E">  },</span></span>
+<span class="line"><span style="color:#005CC5">  "license"</span><span style="color:#24292E">: </span><span style="color:#032F62">"MIT"</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+<ul>
+<li>Crearemos el siguiente Dockerfile con nuestro editor favorito:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">FROM</span><span style="color:#032F62"> node:20.2-alpine</span></span>
+<span class="line"><span style="color:#6F42C1">COPY</span><span style="color:#032F62"> .</span><span style="color:#032F62"> /src</span></span>
+<span class="line"><span style="color:#6F42C1">RUN</span><span style="color:#032F62"> cd</span><span style="color:#032F62"> /src</span><span style="color:#24292E"> &amp;&amp; </span><span style="color:#6F42C1">npm</span><span style="color:#032F62"> install</span></span>
+<span class="line"><span style="color:#6F42C1">EXPOSE</span><span style="color:#005CC5"> 80</span></span>
+<span class="line"><span style="color:#6F42C1">CMD</span><span style="color:#24292E"> [</span><span style="color:#032F62">"node"</span><span style="color:#24292E">, </span><span style="color:#032F62">"/src/server.js"]</span></span></code></pre>
+<ul>
+<li>En nuestra sesión de bash, identificaremos el nombre de nuestro Azure Container Registry (ACR) y lo guardaremos en una variable de entorno:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#24292E">ACR_RG</span><span style="color:#D73A49">=</span><span style="color:#032F62">'acr-01-RG'</span></span>
+<span class="line"><span style="color:#24292E">ACR_NAME</span><span style="color:#D73A49">=</span><span style="color:#24292E">$(</span><span style="color:#6F42C1">az</span><span style="color:#032F62"> acr</span><span style="color:#032F62"> list</span><span style="color:#005CC5"> --resource-group</span><span style="color:#24292E"> $ACR_RGNAME </span><span style="color:#005CC5">--query</span><span style="color:#032F62"> "[].name"</span><span style="color:#005CC5"> --output</span><span style="color:#032F62"> tsv</span><span style="color:#24292E">)</span></span></code></pre>
+<ul>
+<li>De nuestra sesión de bash, crearemos la imagen de Docker basada en el Dockerfile que hemos creado y la pushearemos directamente a nuestro Azure Container Registry (ACR), que le hemos almacenado en la variable <code>ACR_NAME</code>:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">az</span><span style="color:#032F62"> acr</span><span style="color:#032F62"> build</span><span style="color:#005CC5"> --registry</span><span style="color:#24292E"> $ACR_NAME </span><span style="color:#005CC5">--image</span><span style="color:#032F62"> hellofromnode:v1.0</span><span style="color:#032F62"> .</span></span></code></pre>
+<p>### Paso 3: Creación de archivos para el proyecto de Windows</p>
+<ul>
+<li>Crearemos el directorio para el proyecto de Windows:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">mkdir</span><span style="color:#032F62"> ~/image-w01</span></span>
+<span class="line"><span style="color:#005CC5">cd</span><span style="color:#032F62"> ~/image-w01</span></span></code></pre>
+<ul>
+<li>Clonaremos el siguiente repositorio que tiene los archivos necesarios para construir una imagen de Windows con Docker:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">git</span><span style="color:#032F62"> clone</span><span style="color:#032F62"> https://github.com/Azure-Samples/dotnetcore-docs-hello-world.git</span></span>
+<span class="line"><span style="color:#005CC5">cd</span><span style="color:#032F62"> ~/image-w01/dotnetcore-docs-hello-world</span></span></code></pre>
+<ul>
+<li>Dentro del directorio ejecutaremos el siguiente comando para construir la imagen:</li>
+</ul>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">az</span><span style="color:#032F62"> acr</span><span style="color:#032F62"> build</span><span style="color:#005CC5"> --registry</span><span style="color:#24292E"> $ACR_NAME </span><span style="color:#005CC5">--image</span><span style="color:#032F62"> hellofromdotnet:v1.0</span><span style="color:#005CC5"> --platform</span><span style="color:#032F62"> windows</span><span style="color:#005CC5"> --file</span><span style="color:#032F62"> Dockerfile.windows</span><span style="color:#032F62"> .</span></span></code></pre>
+<p>Al ir a nuestro Registry, veremos que tenemos las dos imágenes creadas:</p>
+<p><img src="/assets/Azure/acr-repository.png" alt="ACR Repository"></p>
+<h2 id="ejercicio-3-desplegar-contenedores-en-azure-kubernetes-service">Ejercicio 3: Desplegar contenedores en Azure Kubernetes Service</h2>
+<p>En esta tarea crearemos dos namespaces en nuestro cluster de AKS y desplegaremos las imágenes que hemos creado en el ejercicio anterior.</p>
+<h3 id="paso-1-crear-namespaces">Paso 1: Crear namespaces</h3>
+<ol>
+<li>En el portal de Azure, buscaremos <code>Kubernetes Services</code> y seleccionaremos nuestro cluster de AKS.</li>
+<li>En la pestaña de <code>Kubernetes Resources</code> seleccionaremos <code>Namespaces</code> y crearemos uno llamado <code>dev-node</code> y otro llamado <code>dev-dotnet</code>.</li>
+</ol>
+<h3 id="paso-2-creare-manifiestos-para-desplegar-la-imagen-de-y-windows">Paso 2: Creare manifiestos para desplegar la imagen de y Windows</h3>
+<ol>
+<li>En nuestro Cloud Shell, crearemos el siguiente directorio:</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">mkdir</span><span style="color:#032F62"> ~/aks-l01</span></span>
+<span class="line"><span style="color:#005CC5">cd</span><span style="color:#032F62"> ~/aks-l01</span></span></code></pre>
+<ol start="2">
+<li>Crearemos el siguiente archivo de manifiesto de Kubernetes aks-deployment-l01.yaml:</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#22863A">apiVersion</span><span style="color:#24292E">: </span><span style="color:#032F62">apps/v1</span></span>
+<span class="line"><span style="color:#22863A">kind</span><span style="color:#24292E">: </span><span style="color:#032F62">Deployment</span></span>
+<span class="line"><span style="color:#22863A">metadata</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">  name</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromnode-deployment</span></span>
+<span class="line"><span style="color:#22863A">  labels</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">    environment</span><span style="color:#24292E">: </span><span style="color:#032F62">dev</span></span>
+<span class="line"><span style="color:#22863A">    app</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromnode</span></span>
+<span class="line"><span style="color:#22863A">spec</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">  replicas</span><span style="color:#24292E">: </span><span style="color:#005CC5">1</span></span>
+<span class="line"><span style="color:#22863A">  template</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">    metadata</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">      name</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromnode</span></span>
+<span class="line"><span style="color:#22863A">      labels</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">        app</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromnode</span></span>
+<span class="line"><span style="color:#22863A">    spec</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">      nodeSelector</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#032F62">        "kubernetes.io/os"</span><span style="color:#24292E">: </span><span style="color:#032F62">linux</span></span>
+<span class="line"><span style="color:#22863A">      containers</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">      - </span><span style="color:#22863A">name</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromnode</span></span>
+<span class="line"><span style="color:#22863A">        image</span><span style="color:#24292E">: </span><span style="color:#032F62">ACR_NAME.azurecr.io/hellofromnode:v1.0</span></span>
+<span class="line"><span style="color:#22863A">        resources</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">          limits</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">            cpu</span><span style="color:#24292E">: </span><span style="color:#005CC5">1</span></span>
+<span class="line"><span style="color:#22863A">            memory</span><span style="color:#24292E">: </span><span style="color:#032F62">800M</span></span>
+<span class="line"><span style="color:#22863A">        ports</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">          - </span><span style="color:#22863A">containerPort</span><span style="color:#24292E">: </span><span style="color:#005CC5">80</span></span>
+<span class="line"><span style="color:#22863A">  selector</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">    matchLabels</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">      app</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromnode</span></span>
+<span class="line"><span style="color:#6F42C1">---</span></span>
+<span class="line"><span style="color:#22863A">apiVersion</span><span style="color:#24292E">: </span><span style="color:#032F62">v1</span></span>
+<span class="line"><span style="color:#22863A">kind</span><span style="color:#24292E">: </span><span style="color:#032F62">Service</span></span>
+<span class="line"><span style="color:#22863A">metadata</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">  name</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromnode-service</span></span>
+<span class="line"><span style="color:#22863A">spec</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">  type</span><span style="color:#24292E">: </span><span style="color:#032F62">LoadBalancer</span></span>
+<span class="line"><span style="color:#22863A">  ports</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">  - </span><span style="color:#22863A">protocol</span><span style="color:#24292E">: </span><span style="color:#032F62">TCP</span></span>
+<span class="line"><span style="color:#22863A">    port</span><span style="color:#24292E">: </span><span style="color:#005CC5">80</span></span>
+<span class="line"><span style="color:#22863A">  selector</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">    app</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromnode</span></span></code></pre>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#22863A">apiVersion</span><span style="color:#24292E">: </span><span style="color:#032F62">apps/v1</span></span>
+<span class="line"><span style="color:#22863A">kind</span><span style="color:#24292E">: </span><span style="color:#032F62">Deployment</span></span>
+<span class="line"><span style="color:#22863A">metadata</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">  name</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromdotnet-deployment</span></span>
+<span class="line"><span style="color:#22863A">  labels</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">    environment</span><span style="color:#24292E">: </span><span style="color:#032F62">dev</span></span>
+<span class="line"><span style="color:#22863A">    app</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromdotnet</span></span>
+<span class="line"><span style="color:#22863A">spec</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">  replicas</span><span style="color:#24292E">: </span><span style="color:#005CC5">1</span></span>
+<span class="line"><span style="color:#22863A">  template</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">    metadata</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">      name</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromdotnet</span></span>
+<span class="line"><span style="color:#22863A">      labels</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">        app</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromdotnet</span></span>
+<span class="line"><span style="color:#22863A">    spec</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">      nodeSelector</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#032F62">        "kubernetes.io/os"</span><span style="color:#24292E">: </span><span style="color:#032F62">windows</span></span>
+<span class="line"><span style="color:#22863A">      containers</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">      - </span><span style="color:#22863A">name</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromdotnet</span></span>
+<span class="line"><span style="color:#22863A">        image</span><span style="color:#24292E">: </span><span style="color:#032F62">ACR_NAME.azurecr.io/hellofromdotnet:v1.0</span></span>
+<span class="line"><span style="color:#22863A">        resources</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">          limits</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">            cpu</span><span style="color:#24292E">: </span><span style="color:#005CC5">1</span></span>
+<span class="line"><span style="color:#22863A">            memory</span><span style="color:#24292E">: </span><span style="color:#032F62">800M</span></span>
+<span class="line"><span style="color:#22863A">        ports</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">          - </span><span style="color:#22863A">containerPort</span><span style="color:#24292E">: </span><span style="color:#005CC5">80</span></span>
+<span class="line"><span style="color:#22863A">  selector</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">    matchLabels</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">      app</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromdotnet</span></span>
+<span class="line"><span style="color:#6F42C1">---</span></span>
+<span class="line"><span style="color:#22863A">apiVersion</span><span style="color:#24292E">: </span><span style="color:#032F62">v1</span></span>
+<span class="line"><span style="color:#22863A">kind</span><span style="color:#24292E">: </span><span style="color:#032F62">Service</span></span>
+<span class="line"><span style="color:#22863A">metadata</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">  name</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromdotnet-service</span></span>
+<span class="line"><span style="color:#22863A">spec</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">  type</span><span style="color:#24292E">: </span><span style="color:#032F62">LoadBalancer</span></span>
+<span class="line"><span style="color:#22863A">  ports</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">  - </span><span style="color:#22863A">protocol</span><span style="color:#24292E">: </span><span style="color:#032F62">TCP</span></span>
+<span class="line"><span style="color:#22863A">    port</span><span style="color:#24292E">: </span><span style="color:#005CC5">80</span></span>
+<span class="line"><span style="color:#22863A">  selector</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">    app</span><span style="color:#24292E">: </span><span style="color:#032F62">hellofromdotnet</span></span></code></pre>
+<ol start="3">
+<li>Reemplazaremos <code>ACR_NAME</code> con el nombre de nuestro Azure Container Registry (ACR) y ejecutaremos el siguiente comando para desplegar la imagen de Linux:</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">sed</span><span style="color:#005CC5"> -i</span><span style="color:#032F62"> "s/ACR_NAME/</span><span style="color:#24292E">$ACR_NAME</span><span style="color:#032F62">/"</span><span style="color:#032F62"> ./aks-deployment-w01.yaml</span></span>
+<span class="line"><span style="color:#6F42C1">kubectl</span><span style="color:#032F62"> apply</span><span style="color:#005CC5"> -f</span><span style="color:#032F62"> ./aks-deployment-w01.yaml</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-node</span></span></code></pre>
+<h3 id="paso-3-desplegar-los-manifiestos-en-sus-respectivos-namespaces">Paso 3: Desplegar los manifiestos en sus respectivos namespaces:</h3>
+<ol>
+<li>En nuestra sesión de bash, nos conectaremos al cluster con los siguientes comandos:</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#24292E">AKSRG</span><span style="color:#D73A49">=</span><span style="color:#032F62">'aks-01-RG'</span></span>
+<span class="line"><span style="color:#24292E">AKSNAME</span><span style="color:#D73A49">=</span><span style="color:#032F62">'aks-01'</span></span>
+<span class="line"><span style="color:#6F42C1">az</span><span style="color:#032F62"> aks</span><span style="color:#032F62"> get-credentials</span><span style="color:#005CC5"> --resource-group</span><span style="color:#24292E"> $AKSRG </span><span style="color:#005CC5">--name</span><span style="color:#24292E"> $AKSNAME</span></span></code></pre>
+<ol start="2">
+<li>Verificar que la conexión se ha realizado correctamente:</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">kubectl</span><span style="color:#032F62"> get</span><span style="color:#032F62"> nodes</span></span></code></pre>
+<ol start="3">
+<li>Desplegaremos los manifiestos en sus respectivos namespaces:</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">kubectl</span><span style="color:#032F62"> apply</span><span style="color:#005CC5"> -f</span><span style="color:#032F62"> aks-l01/aks-deployment-l01.yaml</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-node</span></span>
+<span class="line"><span style="color:#6F42C1">kubectl</span><span style="color:#032F62"> apply</span><span style="color:#005CC5"> -f</span><span style="color:#032F62"> aks-w01/aks-deployment-w01.yaml</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-dotnet</span></span></code></pre>
+<ol start="4">
+<li>Verificaremos que los pods se han creado correctamente:</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">kubectl</span><span style="color:#032F62"> get</span><span style="color:#032F62"> pods</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-node</span></span>
+<span class="line"><span style="color:#6F42C1">kubectl</span><span style="color:#032F62"> get</span><span style="color:#032F62"> pods</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-dotnet</span></span></code></pre>
+<ol start="5">
+<li>Verificaremos que los servicios se han creado correctamente:</li>
+</ol>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">kubectl</span><span style="color:#032F62"> get</span><span style="color:#032F62"> services</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-node</span></span>
+<span class="line"><span style="color:#6F42C1">kubectl</span><span style="color:#032F62"> get</span><span style="color:#032F62"> services</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-dotnet</span></span></code></pre>
+<p>Y finalmente, podremos ver que tenemos los pods y los servicios creados correctamente:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">romer</span><span style="color:#24292E"> [ </span><span style="color:#032F62">~</span><span style="color:#032F62"> ]</span><span style="color:#24292E">$ </span><span style="color:#032F62">kubectl</span><span style="color:#032F62"> get</span><span style="color:#032F62"> pods</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-node</span></span>
+<span class="line"><span style="color:#6F42C1">NAME</span><span style="color:#032F62">                                READY</span><span style="color:#032F62">   STATUS</span><span style="color:#032F62">    RESTARTS</span><span style="color:#032F62">   AGE</span></span>
+<span class="line"><span style="color:#6F42C1">hellofromnode-deployment-65bb76d95f-8wp4c</span><span style="color:#032F62">   1/1</span><span style="color:#032F62">     Running</span><span style="color:#005CC5">   0</span><span style="color:#032F62">          4m41s</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1">romer</span><span style="color:#24292E"> [ </span><span style="color:#032F62">~</span><span style="color:#032F62"> ]</span><span style="color:#24292E">$ </span><span style="color:#032F62">kubectl</span><span style="color:#032F62"> get</span><span style="color:#032F62"> pods</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-dotnet</span></span>
+<span class="line"><span style="color:#6F42C1">NAME</span><span style="color:#032F62">                                 READY</span><span style="color:#032F62">   STATUS</span><span style="color:#032F62">    RESTARTS</span><span style="color:#032F62">   AGE</span></span>
+<span class="line"><span style="color:#6F42C1">hellofromdotnet-deployment-66445d8f4-jwtv7</span><span style="color:#032F62">   1/1</span><span style="color:#032F62">     Running</span><span style="color:#005CC5">   0</span><span style="color:#032F62">          4m39s</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1">romer</span><span style="color:#24292E"> [ </span><span style="color:#032F62">~</span><span style="color:#032F62"> ]</span><span style="color:#24292E">$ </span><span style="color:#032F62">kubectl</span><span style="color:#032F62"> get</span><span style="color:#032F62"> services</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-dotnet</span></span>
+<span class="line"><span style="color:#6F42C1">NAME</span><span style="color:#032F62">                           TYPE</span><span style="color:#032F62">           CLUSTER-IP</span><span style="color:#032F62">      EXTERNAL-IP</span><span style="color:#032F62">       PORT</span><span style="color:#24292E">(</span><span style="color:#6F42C1">S</span><span style="color:#24292E">)          </span><span style="color:#032F62">AGE</span></span>
+<span class="line"><span style="color:#6F42C1">hellofromdotnet-service</span><span style="color:#032F62">        LoadBalancer</span><span style="color:#005CC5">   172.16.0.112</span><span style="color:#005CC5">    4.175.193.225</span><span style="color:#032F62">     80:30614/TCP</span><span style="color:#032F62">     4m44s</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1">romer</span><span style="color:#24292E"> [ </span><span style="color:#032F62">~</span><span style="color:#032F62"> ]</span><span style="color:#24292E">$ </span><span style="color:#032F62">kubectl</span><span style="color:#032F62"> get</span><span style="color:#032F62"> services</span><span style="color:#005CC5"> -n</span><span style="color:#032F62"> dev-node</span></span>
+<span class="line"><span style="color:#6F42C1">NAME</span><span style="color:#032F62">                         TYPE</span><span style="color:#032F62">           CLUSTER-IP</span><span style="color:#032F62">      EXTERNAL-IP</span><span style="color:#032F62">       PORT</span><span style="color:#24292E">(</span><span style="color:#6F42C1">S</span><span style="color:#24292E">)          </span><span style="color:#032F62">AGE</span></span>
+<span class="line"><span style="color:#6F42C1">hellofromnode-service</span><span style="color:#032F62">        LoadBalancer</span><span style="color:#005CC5">   172.16.3.220</span><span style="color:#005CC5">    4.175.193.210</span><span style="color:#032F62">     80:32568/TCP</span><span style="color:#032F62">     4m53s</span></span></code></pre>
+<h2 id="ejercicio-4-eliminar-todos-los-recursos">Ejercicio 4: Eliminar todos los recursos</h2>
+<p>Es sumamente importante eliminar todos los recursos que hemos creado para no incurrir en costes innecesarios. Lo podremos hacer de la siguiente manera, en la misma sesión de bash:</p>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1">az</span><span style="color:#032F62"> group</span><span style="color:#032F62"> delete</span><span style="color:#005CC5"> --resource-group</span><span style="color:#24292E"> $ACR_RG </span><span style="color:#005CC5">--yes</span><span style="color:#005CC5"> --no-wait</span></span>
+<span class="line"><span style="color:#6F42C1">az</span><span style="color:#032F62"> group</span><span style="color:#032F62"> delete</span><span style="color:#005CC5"> --resource-group</span><span style="color:#24292E"> $AKSRG </span><span style="color:#005CC5">--yes</span><span style="color:#005CC5"> --no-wait</span></span></code></pre>
+</article></main><footer data-astro-cid-jo6i4kqk><div class="wrap" data-astro-cid-jo6i4kqk><span class="label" data-astro-cid-jo6i4kqk>romeralvarez.me</span><span class="links" data-astro-cid-jo6i4kqk><a class="label" href="https://github.com/RomerEnr" rel="me" data-astro-cid-jo6i4kqk>GitHub</a><a class="label" href="https://www.linkedin.com/in/romer-alvarez-martinez" rel="me" data-astro-cid-jo6i4kqk>LinkedIn</a><a class="label" href="mailto:romeralvareziv@gmail.com" data-astro-cid-jo6i4kqk>Email</a></span><span class="label" data-astro-cid-jo6i4kqk>Alessandria · Remoto</span></div></footer></body></html>
