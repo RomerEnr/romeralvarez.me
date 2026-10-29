@@ -18,6 +18,15 @@ const services: { icon: IconName; n: 1 | 2 | 3 }[] = [
   { icon: "argo", n: 3 },
 ];
 
+// The path so far, oldest first. Each stop is a node on the line.
+const path: { n: 1 | 2 | 3 | 4 | 5; tags: [string, IconName?][] }[] = [
+  { n: 1, tags: [["Linux"], ["Azure"], ["Docker", "docker"]] },
+  { n: 2, tags: [["Java"], ["Spring Boot"], ["Kafka"], ["PostgreSQL"]] },
+  { n: 3, tags: [["AWS", "aws"], ["Kubernetes", "kubernetes"], ["Terraform", "terraform"], ["Grafana", "grafana"]] },
+  { n: 4, tags: [["Python"], ["Go"], ["Claude Code"], ["GitHub Actions", "actions"]] },
+  { n: 5, tags: [["Products"], ["Tools"], ["Platforms"]] },
+];
+
 // Sample projects from the design. They are replaced by Romer's real ones.
 const projects: { n: 1 | 2 | 3; stack: string; steps: [string, IconName?][] }[] = [
   { n: 1, stack: "Kubernetes · ArgoCD · AWS", steps: [["Commit", "git"], ["Actions", "actions"], ["ArgoCD", "argo"], ["EKS", "aws"]] },
@@ -72,6 +81,34 @@ const jsonLd = {
             ))
           }
         </div>
+      </div>
+    </section>
+
+    <section class="block" id="path">
+      <div class="wrap flowing">
+        <span class="label">{t(locale, "path.label")}</span>
+        <h2>{t(locale, "path.title")}</h2>
+        <ol class="stops">
+          {
+            path.map(({ n, tags }) => (
+              <li class="stop" data-node="18">
+                <span class="when">{t(locale, `path.${n}.when`)}</span>
+                <div>
+                  <h3>{t(locale, `path.${n}.title`)}</h3>
+                  <p>{t(locale, `path.${n}.text`)}</p>
+                  <ul class="tags">
+                    {tags.map(([name, icon]) => (
+                      <li>
+                        {icon && <Icon name={icon} />}
+                        {name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
       </div>
     </section>
 
@@ -192,6 +229,7 @@ const jsonLd = {
     display: block;
     margin-bottom: 24px;
   }
+  #path h2,
   #projects h2,
   .end h2 {
     margin-top: -8px;
@@ -235,6 +273,64 @@ const jsonLd = {
     width: 100%;
     height: 100%;
     display: block;
+  }
+
+  .stops {
+    list-style: none;
+    margin: 40px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 56px;
+  }
+  .stop {
+    display: grid;
+    gap: 12px;
+  }
+  @media (min-width: 900px) {
+    .stop {
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: 32px;
+    }
+  }
+  .when {
+    font: 500 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--pipeline-ink);
+    padding-top: 12px;
+  }
+  .stop h3 {
+    margin: 0 0 8px;
+    font: 500 clamp(26px, 3vw, 36px)/1.15 var(--display);
+    letter-spacing: -0.02em;
+  }
+  .stop p {
+    margin: 0 0 16px;
+    color: var(--ink-muted);
+    max-width: 52ch;
+  }
+  .tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tags li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 11px/1 var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .tags :global(svg.ico) {
+    width: 14px;
+    height: 14px;
   }
 
   .cards {
