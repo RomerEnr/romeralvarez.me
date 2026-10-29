@@ -13,18 +13,17 @@ const { locale } = Astro.props;
 const alternates = Object.fromEntries(locales.map((l) => [l, localePath(l)]));
 
 const services: { icon: IconName; n: 1 | 2 | 3 }[] = [
-  { icon: "terraform", n: 1 },
-  { icon: "kubernetes", n: 2 },
-  { icon: "argo", n: 3 },
+  { icon: "product", n: 1 },
+  { icon: "tools", n: 2 },
+  { icon: "layers", n: 3 },
 ];
 
 // The path so far, oldest first. Each stop is a node on the line.
-const path: { n: 1 | 2 | 3 | 4 | 5; tags: [string, IconName?][] }[] = [
+const path: { n: 1 | 2 | 3 | 4; tags: [string, IconName?][] }[] = [
   { n: 1, tags: [["Linux"], ["Azure"], ["Docker", "docker"]] },
   { n: 2, tags: [["Java"], ["Spring Boot"], ["Kafka"], ["PostgreSQL"]] },
-  { n: 3, tags: [["AWS", "aws"], ["Kubernetes", "kubernetes"], ["Terraform", "terraform"], ["Grafana", "grafana"]] },
-  { n: 4, tags: [["Python"], ["Go"], ["Claude Code"], ["GitHub Actions", "actions"]] },
-  { n: 5, tags: [["Products"], ["Tools"], ["Platforms"]] },
+  { n: 3, tags: [["AWS", "aws"], ["Kubernetes", "kubernetes"], ["Terraform", "terraform"], ["Grafana", "grafana"], ["Bedrock"]] },
+  { n: 4, tags: [["Products"], ["Tools"], ["Platforms"]] },
 ];
 
 const jsonLd = {
@@ -61,6 +60,7 @@ const jsonLd = {
     <section class="block" id="services" data-node>
       <div class="wrap flowing">
         <span class="label">{t(locale, "services.label")}</span>
+        <h2>{t(locale, "services.title")}</h2>
         <div class="services">
           {
             services.map(({ icon, n }) => (
@@ -194,6 +194,7 @@ const jsonLd = {
     display: block;
     margin-bottom: 24px;
   }
+  #services h2,
   #path h2,
   .end h2 {
     margin-top: -8px;
