@@ -1,42 +1,42 @@
 ---
-import { SITE } from "@config";
-import Layout from "@layouts/Layout.astro";
-import Header from "@components/Header.astro";
-import Footer from "@components/Footer.astro";
-import LinkButton from "@components/LinkButton.astro";
+import Base from "../layouts/Base.astro";
+import { locales, localePath, t } from "../i18n";
 ---
 
-<Layout title={`404 Not Found | ${SITE.title}`}>
-  <Header />
-
-  <main id="main-content">
-    <div class="not-found-wrapper">
-      <h1 aria-label="404 Not Found">404</h1>
-      <span aria-hidden="true">¯\_(ツ)_/¯</span>
-      <p>Page Not Found</p>
-      <LinkButton
-        href="/"
-        className="my-6 underline decoration-dashed underline-offset-8 text-lg"
-      >
-        Go back home
-      </LinkButton>
-    </div>
+<Base locale="en" title="404 · Romer Alvarez">
+  <main class="wrap flowing">
+    <span class="label">404</span>
+    {
+      locales.map((l) => (
+        <section lang={l}>
+          <h1>{t(l, "notFound.title")}</h1>
+          <p>
+            {t(l, "notFound.text")} <a href={localePath(l)}>{t(l, "notFound.home")}</a>
+          </p>
+        </section>
+      ))
+    }
   </main>
-
-  <Footer />
-</Layout>
+</Base>
 
 <style>
-  #main-content {
-    @apply mx-auto flex max-w-3xl flex-1 items-center justify-center;
+  main {
+    padding-block: 72px 96px;
   }
-  .not-found-wrapper {
-    @apply mb-14 flex flex-col items-center justify-center;
+  section {
+    margin-top: 32px;
   }
-  .not-found-wrapper h1 {
-    @apply text-9xl font-bold text-skin-accent;
+  section + section h1 {
+    font-size: clamp(32px, 4vw, 48px);
+    color: var(--ink-muted);
   }
-  .not-found-wrapper p {
-    @apply mt-4 text-2xl sm:text-3xl;
+  h1 {
+    font-size: clamp(48px, 7vw, 96px);
+  }
+  p {
+    color: var(--ink-muted);
+  }
+  a {
+    color: var(--pipeline-ink);
   }
 </style>
