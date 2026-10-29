@@ -1,0 +1,371 @@
+---
+import Base from "../layouts/Base.astro";
+import Icon from "./Icon.astro";
+import { locales, localePath, t, type Locale } from "../i18n";
+import type { IconName } from "../lib/icons";
+import { SITE } from "../site";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const alternates = Object.fromEntries(locales.map((l) => [l, localePath(l)]));
+
+const services: { icon: IconName; n: 1 | 2 | 3 }[] = [
+  { icon: "terraform", n: 1 },
+  { icon: "kubernetes", n: 2 },
+  { icon: "argo", n: 3 },
+];
+
+// Sample projects from the design. They are replaced by Romer's real ones.
+const projects: { n: 1 | 2 | 3; stack: string; steps: [string, IconName?][] }[] = [
+  { n: 1, stack: "Kubernetes · ArgoCD · AWS", steps: [["Commit", "git"], ["Actions", "actions"], ["ArgoCD", "argo"], ["EKS", "aws"]] },
+  { n: 2, stack: "OpenTelemetry · Grafana", steps: [["App", "docker"], ["OTel", "otel"], ["Grafana", "grafana"]] },
+  { n: 3, stack: "GitHub Actions · Docker", steps: [["Build", "actions"], ["Test"], ["Push", "docker"], ["Deploy", "kubernetes"]] },
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  mainEntity: {
+    "@type": "Person",
+    name: SITE.name,
+    jobTitle: SITE.jobTitle,
+    url: SITE.url,
+    email: `mailto:${SITE.email}`,
+    address: { "@type": "PostalAddress", addressLocality: "Alessandria", addressCountry: "IT" },
+    sameAs: [SITE.github, SITE.linkedin],
+    knowsAbout: ["AWS", "Kubernetes", "Terraform", "ArgoCD", "GitHub Actions", "OpenTelemetry", "Grafana"],
+  },
+};
+---
+
+<Base locale={locale} alternates={alternates} jsonLd={jsonLd}>
+  <main id="top">
+    <section class="hero">
+      <div class="wrap">
+        <div>
+          <h1>Platform Engineer.</h1>
+          <p class="lead" id="lead">{t(locale, "hero.lead")}</p>
+        </div>
+        <div class="stage" id="stage" role="img" aria-label={t(locale, "hero.stage")}>
+          <canvas></canvas>
+          <span class="label hint">01 · Commit</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="services" data-node>
+      <div class="wrap flowing">
+        <span class="label">{t(locale, "services.label")}</span>
+        <div class="services">
+          {
+            services.map(({ icon, n }) => (
+              <div class="service">
+                <div class="glyph" data-icon={icon}>
+                  <Icon name={icon} />
+                </div>
+                <h3>{t(locale, `services.${n}.title`)}</h3>
+                <p>{t(locale, `services.${n}.text`)}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="projects">
+      <div class="wrap flowing">
+        <span class="label">{t(locale, "projects.label")}</span>
+        <h2>{t(locale, "projects.title")}</h2>
+        <div class="cards">
+          {
+            projects.map(({ n, stack, steps }) => (
+              <article class="card" data-node>
+                <div class="shot">
+                  {steps.map(([name, icon]) => (
+                    <b>
+                      {icon && <Icon name={icon} />}
+                      {name}
+                    </b>
+                  ))}
+                </div>
+                <div>
+                  <span class="label">{stack}</span>
+                  <h3>{t(locale, `projects.${n}.title`)}</h3>
+                  <p>{t(locale, `projects.${n}.text`)}</p>
+                  <span class="metric">{t(locale, `projects.${n}.metric`)}</span>
+                </div>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="end" id="contact">
+      <div class="wrap flowing">
+        <span class="label">{t(locale, "end.label")}</span>
+        <h2>{t(locale, "end.title")}</h2>
+        <p>{t(locale, "end.text")}</p>
+        <a class="pill cta big" id="endcta" href={`mailto:${SITE.email}`}>{t(locale, "cta")}</a>
+      </div>
+    </section>
+
+    <svg class="pipe" aria-hidden="true"><path></path></svg>
+  </main>
+</Base>
+
+<script>
+  import "../scripts/pipeline";
+
+  // The 3D scenes pull in three.js, so they load only when their section comes into view.
+  const lazy = (selector: string, load: () => Promise<unknown>) => {
+    const el = document.querySelector(selector);
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        io.disconnect();
+        load();
+      }
+    }, { rootMargin: "200px" });
+    io.observe(el);
+  };
+  lazy("#stage", () => import("../scripts/hero"));
+  lazy("#services", () => import("../scripts/tokens"));
+</script>
+
+<style>
+  .hero .wrap {
+    display: grid;
+    gap: 32px;
+    padding-block: 48px 32px;
+  }
+  @media (min-width: 960px) {
+    .hero .wrap {
+      grid-template-columns: 1fr 400px;
+      align-items: start;
+      padding-block: 72px 40px;
+    }
+  }
+  .lead {
+    margin: 24px 0 0;
+    max-width: 30ch;
+    font: 400 clamp(20px, 2.2vw, 28px)/1.35 var(--sans);
+  }
+  .stage {
+    position: relative;
+    border-radius: 16px;
+    background: var(--ink);
+    overflow: hidden;
+    aspect-ratio: 5 / 4;
+    max-width: 100%;
+    cursor: grab;
+    touch-action: pan-y;
+  }
+  .stage:active {
+    cursor: grabbing;
+  }
+  .stage canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .hint {
+    position: absolute;
+    left: 16px;
+    bottom: 14px;
+    color: #9aa0aa;
+    pointer-events: none;
+  }
+
+  main {
+    position: relative;
+  }
+  section.block {
+    padding-block: 64px;
+  }
+  section > .wrap > .label {
+    display: block;
+    margin-bottom: 24px;
+  }
+  #projects h2,
+  .end h2 {
+    margin-top: -8px;
+  }
+
+  .services {
+    display: grid;
+    gap: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .services h3 {
+    margin: 0 0 8px;
+    font: 500 20px/1.3 var(--display);
+  }
+  .services p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+  }
+  .glyph {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 16px;
+    display: grid;
+    place-items: center;
+    background: var(--surface);
+    border-radius: 12px;
+  }
+  .glyph :global(svg.ico) {
+    width: 22px;
+    height: 22px;
+  }
+  .glyph:global(.token) {
+    width: 128px;
+    height: 128px;
+    background: none;
+    margin: -24px 0 -4px -30px;
+  }
+  .glyph :global(canvas) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .cards {
+    display: grid;
+    gap: 24px;
+  }
+  .card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 20px;
+    display: grid;
+    gap: 24px;
+    transition: transform 0.3s var(--ease);
+  }
+  .card:hover {
+    transform: translateY(-3px);
+  }
+  @media (min-width: 900px) {
+    .card {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      padding: 24px;
+    }
+  }
+  .shot {
+    position: relative;
+    min-height: 148px;
+    border-radius: 10px;
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 6px;
+    padding: 0 12px;
+    overflow: hidden;
+  }
+  .shot::before {
+    content: "";
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    top: 50%;
+    height: 4px;
+    margin-top: -2px;
+    background: var(--pipeline);
+    border-radius: 4px;
+  }
+  .shot b {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    font: 500 11px/1 var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--ink);
+    border-radius: 8px;
+    padding: 11px 8px;
+    background: var(--surface);
+  }
+  .card h3 {
+    margin: 10px 0 8px;
+    font: 500 clamp(28px, 3.2vw, 40px)/1.1 var(--display);
+    letter-spacing: -0.02em;
+  }
+  .card p {
+    margin: 0 0 14px;
+    color: var(--ink-muted);
+    max-width: 46ch;
+  }
+  .metric {
+    display: inline-block;
+    font: 500 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--pipeline-soft);
+    color: var(--pipeline-ink);
+    padding: 8px 10px;
+    border-radius: 6px;
+  }
+  @media (max-width: 560px) {
+    .shot {
+      padding: 0 6px;
+      gap: 4px;
+    }
+    .shot b :global(svg) {
+      display: none;
+    }
+    .shot b {
+      font-size: 10px;
+      letter-spacing: 0.02em;
+      padding: 9px 5px;
+    }
+  }
+
+  .end {
+    padding-block: 96px 64px;
+  }
+  .end h2 {
+    margin-bottom: 32px;
+  }
+  .end p {
+    color: var(--ink-muted);
+    max-width: 46ch;
+    margin: 0 0 32px;
+  }
+
+  svg.pipe {
+    position: absolute;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 1;
+  }
+  svg.pipe :global(path) {
+    fill: none;
+    stroke: var(--pipeline);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  svg.pipe :global(circle) {
+    fill: var(--pipeline);
+    stroke: var(--paper);
+    stroke-width: 3;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.45s var(--ease);
+  }
+  svg.pipe :global(circle.off) {
+    transform: scale(0);
+  }
+</style>

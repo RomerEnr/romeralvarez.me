@@ -1,45 +1,43 @@
 ---
-import Hr from "./Hr.astro";
-import Socials from "./Socials.astro";
+import { t, type Locale } from "../i18n";
+import { SITE } from "../site";
 
-const currentYear = new Date().getFullYear();
-
-export interface Props {
-  noMarginTop?: boolean;
+interface Props {
+  locale: Locale;
 }
 
-const { noMarginTop = false } = Astro.props;
+const { locale } = Astro.props;
 ---
 
-<footer class={`${noMarginTop ? "" : "mt-auto"}`}>
-  <Hr noPadding />
-  <div class="footer-wrapper">
-    <Socials centered />
-    <div class="copyright-wrapper">
-      <span>Copyright &#169; {currentYear}</span>
-      <span class="separator">&nbsp;|&nbsp;</span>
-      <span>Romer Alvarez, todos los derechos reservados.</span>
-    </div>
+<footer>
+  <div class="wrap">
+    <span class="label">romeralvarez.me</span>
+    <span class="links">
+      <a class="label" href={SITE.github} rel="me">GitHub</a>
+      <a class="label" href={SITE.linkedin} rel="me">LinkedIn</a>
+      <a class="label" href={`mailto:${SITE.email}`}>Email</a>
+    </span>
+    <span class="label">{t(locale, "footer.place")}</span>
   </div>
 </footer>
 
 <style>
-  footer {
-    @apply w-full;
+  footer .wrap {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-block: 32px;
+    border-top: 1px solid var(--line);
   }
-  .footer-wrapper {
-    @apply flex flex-col items-center justify-between py-6 sm:flex-row-reverse sm:py-4;
+  .links {
+    display: flex;
+    gap: 20px;
   }
-  .link-button {
-    @apply my-1 p-2 hover:rotate-6;
+  .links a {
+    text-decoration: none;
   }
-  .link-button svg {
-    @apply scale-125;
-  }
-  .copyright-wrapper {
-    @apply my-2 flex flex-col items-center whitespace-nowrap sm:flex-row;
-  }
-  .separator {
-    @apply hidden sm:inline;
+  .links a:hover {
+    color: var(--ink);
   }
 </style>

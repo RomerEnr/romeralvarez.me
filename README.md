@@ -1,6 +1,34 @@
 # romeralvarez.me
 
-![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![GitHub](https://img.shields.io/github/license/satnaing/astro-paper?color=%232F3741&style=for-the-badge)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white&style=for-the-badge)](https://conventionalcommits.org)
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=for-the-badge)](http://commitizen.github.io/cz-cli/)
+Personal site of Romer Alvarez, Platform Engineer. Built with [Astro](https://astro.build) and deployed to GitHub Pages.
+
+## Structure
+
+```
+src/
+  pages/               home in English (/), Italian (/it/) and Spanish (/es/), blog under /es/blog/
+  components/          Home, Header, Footer, Icon
+  layouts/             Base (head, SEO, header, footer) and Post
+  content/blog/<lang>/ blog posts in Markdown, one folder per language
+  i18n/                interface strings, one JSON per language with the same keys
+  scripts/             the pipeline line and the 3D scenes (three.js, loaded on demand)
+  styles/global.css    design tokens and base styles
+public/models/         3D pieces for the hero (GLB)
+```
+
+## Writing
+
+- New post: add `src/content/blog/es/<slug>.md` with `title`, `description`, `pubDate` and `tags`.
+- New interface text: add the key to `en.json`, `it.json` and `es.json`. The build fails if a language is missing a key.
+
+## Commands
+
+| Command           | What it does                   |
+| ----------------- | ------------------------------ |
+| `npm install`     | Install dependencies           |
+| `npm run dev`     | Local server at localhost:4321 |
+| `npm run build`   | Build the site into `dist/`    |
+| `npm run preview` | Serve the build locally        |
+| `npm run check`   | Type-check the project         |
+
+Requires Node 22.23.4 or newer.
