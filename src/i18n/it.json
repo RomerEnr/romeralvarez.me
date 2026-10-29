@@ -1,6 +1,6 @@
 {
-  "meta.title": "Romer Alvarez · Platform Engineer",
-  "meta.description": "Platform Engineer. Costruisco piattaforme cloud su AWS e Kubernetes che semplificano la vita agli sviluppatori.",
+  "meta.title": "Romer Alvarez · Software Engineer",
+  "meta.description": "Software Engineer. Costruisco prodotti, strumenti e le piattaforme su cui girano.",
   "nav.label": "Menu principale",
   "nav.menu": "Menu",
   "nav.home": "Home",
@@ -10,7 +10,7 @@
   "nav.contact": "Contatti",
   "langs.label": "Lingua",
   "cta": "Parliamone",
-  "hero.lead": "Costruisco piattaforme cloud su AWS e Kubernetes che semplificano la vita agli sviluppatori.",
+  "hero.lead": "Costruisco prodotti, strumenti e le piattaforme su cui girano.",
   "hero.stage": "Animazione 3D di un rilascio: commit, CI, ArgoCD, Kubernetes, metriche e Terraform. Tocca per ricominciare.",
   "services.label": "Cosa faccio",
   "services.1.title": "Infrastruttura cloud",

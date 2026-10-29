@@ -1,6 +1,6 @@
 # romeralvarez.me
 
-Personal site of Romer Alvarez, Platform Engineer. Built with [Astro](https://astro.build) and deployed to GitHub Pages.
+Personal site of Romer Alvarez, Software Engineer. Built with [Astro](https://astro.build) and deployed to GitHub Pages.
 
 ## Structure
 
