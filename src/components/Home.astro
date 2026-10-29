@@ -27,11 +27,14 @@ const path: { n: 1 | 2 | 3 | 4 | 5; tags: [string, IconName?][] }[] = [
   { n: 5, tags: [["Products"], ["Tools"], ["Platforms"]] },
 ];
 
-// Sample projects from the design. They are replaced by Romer's real ones.
-const projects: { n: 1 | 2 | 3; stack: string; steps: [string, IconName?][] }[] = [
-  { n: 1, stack: "Kubernetes · ArgoCD · AWS", steps: [["Commit", "git"], ["Actions", "actions"], ["ArgoCD", "argo"], ["EKS", "aws"]] },
-  { n: 2, stack: "OpenTelemetry · Grafana", steps: [["App", "docker"], ["OTel", "otel"], ["Grafana", "grafana"]] },
-  { n: 3, stack: "GitHub Actions · Docker", steps: [["Build", "actions"], ["Test"], ["Push", "docker"], ["Deploy", "kubernetes"]] },
+// Selected work from RatedPower and PwC, until Romer's own projects join them.
+const projects: { n: 1 | 2 | 3 | 4 | 5 | 6; stack: string; steps: [string, IconName?][] }[] = [
+  { n: 1, stack: "RatedPower · AWS · Terraform", steps: [["Terraform", "terraform"], ["Helm"], ["EKS", "kubernetes"], ["AWS", "aws"]] },
+  { n: 2, stack: "RatedPower · PostgreSQL · PostGIS", steps: [["Postgres"], ["Backfill"], ["PostGIS"]] },
+  { n: 3, stack: "RatedPower · Grafana · OpenTelemetry", steps: [["App", "docker"], ["OTel", "otel"], ["Grafana", "grafana"], ["Alert"]] },
+  { n: 4, stack: "RatedPower · Amazon Bedrock · Python", steps: [["Prompt"], ["Bedrock", "aws"], ["Agent"]] },
+  { n: 5, stack: "PwC · Java · Spring Boot", steps: [["Sign-up"], ["Voucher"], ["Shops"]] },
+  { n: 6, stack: "PwC · Spring Boot · Kafka", steps: [["Next.js"], ["Spring"], ["Kafka"], ["Argo CD", "argo"]] },
 ];
 
 const jsonLd = {
