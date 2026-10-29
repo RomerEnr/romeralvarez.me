@@ -12,10 +12,11 @@ interface Props {
 const { locale } = Astro.props;
 const alternates = Object.fromEntries(locales.map((l) => [l, localePath(l)]));
 
-const services: { icon: IconName; n: 1 | 2 | 3 }[] = [
-  { icon: "product", n: 1 },
-  { icon: "tools", n: 2 },
-  { icon: "layers", n: 3 },
+// Each service shows a toy piece from the hero (public/models); the flat icon stays as the fallback.
+const services: { icon: IconName; model: number; n: 1 | 2 | 3 }[] = [
+  { icon: "product", model: 3, n: 1 },
+  { icon: "tools", model: 2, n: 2 },
+  { icon: "layers", model: 6, n: 3 },
 ];
 
 // The path so far, oldest first. Each stop is a node on the line.
@@ -63,9 +64,9 @@ const jsonLd = {
         <h2>{t(locale, "services.title")}</h2>
         <div class="services">
           {
-            services.map(({ icon, n }) => (
+            services.map(({ icon, model, n }) => (
               <div class="service">
-                <div class="glyph" data-icon={icon}>
+                <div class="glyph" data-icon={icon} data-model={model}>
                   <Icon name={icon} />
                 </div>
                 <h3>{t(locale, `services.${n}.title`)}</h3>
@@ -229,10 +230,10 @@ const jsonLd = {
     height: 22px;
   }
   .glyph:global(.token) {
-    width: 128px;
-    height: 128px;
+    width: 150px;
+    height: 150px;
     background: none;
-    margin: -24px 0 -4px -30px;
+    margin: -24px 0 -8px -36px;
   }
   .glyph :global(canvas) {
     width: 100%;
