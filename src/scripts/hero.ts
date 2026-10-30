@@ -276,7 +276,10 @@ function start(renderer: THREE.WebGLRenderer) {
     pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -(((e.clientY - r.top) / r.height) * 2 - 1));
   });
   stage.addEventListener("pointerleave", () => pointer.set(0, 0));
-  stage.addEventListener("click", () => (startedAt = performance.now()));
+  stage.addEventListener("click", () => {
+    startedAt = performance.now();
+    if (pausedAt) pausedAt = startedAt;
+  });
 
   let baseDist = 1.15;
   function size() {
@@ -292,9 +295,24 @@ function start(renderer: THREE.WebGLRenderer) {
   let visible = true;
   new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(stage);
 
+  // The story loops, so it gets a pause button; while paused the clock stands still.
+  let pausedAt = 0;
+  const play = stage.querySelector<HTMLButtonElement>(".play")!;
+  if (!reduce) play.hidden = false;
+  play.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const now = performance.now();
+    if (pausedAt) {
+      startedAt += now - pausedAt;
+      pausedAt = 0;
+    } else pausedAt = now;
+    play.setAttribute("aria-pressed", String(!!pausedAt));
+    play.setAttribute("aria-label", (pausedAt ? play.dataset.play : play.dataset.pause)!);
+  });
+
   function tick(now: number) {
     if (visible) {
-      const t = reduce ? HOLD - 1 : ((now - startedAt) / 1000) % OUT;
+      const t = reduce ? HOLD - 1 : (((pausedAt || now) - startedAt) / 1000) % OUT;
       tilt.x += (pointer.y * 0.15 - tilt.x) * 0.06;
       tilt.y += (pointer.x * 0.35 - tilt.y) * 0.06;
       world.rotation.set(-tilt.x, 0.3 + tilt.y, 0);
