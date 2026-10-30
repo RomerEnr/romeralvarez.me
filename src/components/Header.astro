@@ -24,7 +24,7 @@ const links = [
       <div class="langs" role="group" aria-label={t(locale, "langs.label")}>
         {
           locales.map((l) => (
-            <a href={alternates[l] ?? localePath(l)} hreflang={l} lang={l} aria-current={l === locale ? "true" : undefined}>
+            <a href={alternates[l] ?? localePath(l)} hreflang={l} lang={l} aria-current={l === locale ? "true" : undefined} data-umami-event="language" data-umami-event-to={l}>
               {l.toUpperCase()}
             </a>
           ))
@@ -39,7 +39,7 @@ const links = [
           {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
         </ul>
       </details>
-      <a class="pill cta" href={`${home}#contact`}>{t(locale, "cta")}</a>
+      <a class="pill cta" href={`${home}#contact`} data-umami-event="cta" data-umami-event-place="header">{t(locale, "cta")}</a>
     </nav>
   </div>
 </header>

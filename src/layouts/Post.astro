@@ -27,7 +27,7 @@ const jsonLd = {
 ---
 
 <Base locale={locale} title={`${title} · Romer Alvarez`} description={description} image={image} alternates={{ [locale]: postUrl(post) }} jsonLd={jsonLd} type="article">
-  <main class="wrap flowing">
+  <main id="main" class="wrap flowing">
     <a class="back label" href={`/${locale}/blog/`}>{t(locale, "blog.back")}</a>
     <header>
       <time class="label" datetime={pubDate.toISOString()}>{formatDate(pubDate, locale)}</time>
@@ -134,9 +134,18 @@ const jsonLd = {
   }
   .prose :global(blockquote) {
     margin: 1.6em 0;
-    padding: 4px 0 4px 20px;
-    border-left: 4px solid var(--pipeline);
+    padding: 0 0 0 1.4em;
     color: var(--ink-muted);
+    font-style: italic;
+    position: relative;
+  }
+  .prose :global(blockquote)::before {
+    content: "\201C";
+    position: absolute;
+    left: -0.05em;
+    top: -0.15em;
+    font: 500 2.4em/1 var(--display);
+    color: var(--pipeline);
   }
   .prose :global(:not(pre) > code) {
     font: 500 0.88em var(--mono);

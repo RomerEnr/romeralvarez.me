@@ -7,6 +7,7 @@ const R = 16;
 
 let total = 0;
 let drawn = 0;
+let head = -1;
 let samples: [number, number][] = [];
 let nodes: { el: SVGCircleElement; at: number }[] = [];
 
@@ -66,6 +67,7 @@ function build() {
   nodes.push(end);
 
   path.style.strokeDasharray = String(total);
+  head = -1;
   frame(true);
 }
 
@@ -76,11 +78,28 @@ function frame(once?: boolean) {
   drawn = once || reduce ? target : drawn + (target - drawn) * 0.08;
   path.style.strokeDashoffset = String(total - drawn);
   for (const n of nodes) n.el.classList.toggle("off", drawn < n.at - 2);
-  if (!once) requestAnimationFrame(() => frame());
+  // The head of the line, for the piece that rides it (rider.ts).
+  if (total && Math.abs(drawn - head) > 0.5) {
+    head = drawn;
+    const p = path.getPointAtLength(drawn);
+    main.dispatchEvent(new CustomEvent("pipe:head", { detail: { x: p.x, y: p.y, end: drawn >= total - 1 } }));
+  }
+  // Keep drawing while the line is still catching up with the scroll; a scroll starts it again.
+  if (once) return;
+  if (Math.abs(target - drawn) > 0.5) requestAnimationFrame(() => frame());
+  else running = false;
 }
+
+let running = false;
+function wake() {
+  if (running) return;
+  running = true;
+  requestAnimationFrame(() => frame());
+}
+addEventListener("scroll", wake, { passive: true });
 
 document.fonts.ready.then(() => {
   build();
-  requestAnimationFrame(() => frame());
+  wake();
 });
 new ResizeObserver(() => requestAnimationFrame(build)).observe(main);

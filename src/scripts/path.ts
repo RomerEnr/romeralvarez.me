@@ -6,6 +6,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+  // The portrait rises out of its baseline while the disc behind it grows, in step with the scroll.
+  const portrait = document.querySelector("#path .portrait");
+  if (portrait)
+    gsap
+      .timeline({ scrollTrigger: { trigger: portrait, start: "top 95%", end: "bottom 60%", scrub: 0.8 } })
+      .from(portrait.querySelector(".disc"), { scale: 0.3, ease: "none" })
+      .from(portrait.querySelector("img"), { yPercent: 70, filter: "grayscale(1)", ease: "none" }, "<0.1");
+
   for (const stop of document.querySelectorAll<HTMLElement>("#path .stop")) {
     gsap
       .timeline({ scrollTrigger: { trigger: stop, start: "top 92%", end: "top 65%", scrub: 0.6 } })

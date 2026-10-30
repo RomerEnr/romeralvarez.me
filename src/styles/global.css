@@ -9,6 +9,11 @@
   --pipeline: #f7930e;
   --pipeline-ink: #a35200;
   --pipeline-soft: #fdebd3;
+  /* Text and controls on the dark hero stage. */
+  --stage-muted: #9aa0aa;
+  --stage-fg: #c9ccd2;
+  --stage-control: rgb(255 255 255 / 0.08);
+  --stage-control-hover: rgb(255 255 255 / 0.16);
   --display: var(--font-display), "Helvetica Neue", Arial, sans-serif;
   --sans: var(--font-sans), "Helvetica Neue", Arial, sans-serif;
   --mono: var(--font-mono), ui-monospace, Menlo, monospace;
@@ -48,6 +53,24 @@ html {
 :focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
+}
+
+/* Skip link: off screen until it gets keyboard focus. */
+.skip {
+  position: absolute;
+  left: 16px;
+  top: 12px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 500 14px/1 var(--sans);
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip:focus-visible {
+  transform: none;
 }
 
 .visually-hidden {
