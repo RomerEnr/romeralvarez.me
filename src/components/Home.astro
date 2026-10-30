@@ -12,17 +12,19 @@ interface Props {
 const { locale } = Astro.props;
 const alternates = Object.fromEntries(locales.map((l) => [l, localePath(l)]));
 
-const services: { icon: IconName; n: 1 | 2 | 3 }[] = [
-  { icon: "terraform", n: 1 },
-  { icon: "kubernetes", n: 2 },
-  { icon: "argo", n: 3 },
+// Each service shows a toy piece from the hero (public/models); the flat icon stays as the fallback.
+const services: { icon: IconName; model: number; n: 1 | 2 | 3 }[] = [
+  { icon: "product", model: 3, n: 1 },
+  { icon: "tools", model: 2, n: 2 },
+  { icon: "layers", model: 6, n: 3 },
 ];
 
-// Sample projects from the design. They are replaced by Romer's real ones.
-const projects: { n: 1 | 2 | 3; stack: string; steps: [string, IconName?][] }[] = [
-  { n: 1, stack: "Kubernetes · ArgoCD · AWS", steps: [["Commit", "git"], ["Actions", "actions"], ["ArgoCD", "argo"], ["EKS", "aws"]] },
-  { n: 2, stack: "OpenTelemetry · Grafana", steps: [["App", "docker"], ["OTel", "otel"], ["Grafana", "grafana"]] },
-  { n: 3, stack: "GitHub Actions · Docker", steps: [["Build", "actions"], ["Test"], ["Push", "docker"], ["Deploy", "kubernetes"]] },
+// The path so far, oldest first. Each stop is a node on the line.
+const path: { n: 1 | 2 | 3 | 4; tags: [string, IconName?][] }[] = [
+  { n: 1, tags: [["Linux"], ["Azure"], ["Docker", "docker"]] },
+  { n: 2, tags: [["Java"], ["Spring Boot"], ["Kafka"], ["PostgreSQL"]] },
+  { n: 3, tags: [["AWS", "aws"], ["Kubernetes", "kubernetes"], ["Terraform", "terraform"], ["Grafana", "grafana"], ["Bedrock"]] },
+  { n: 4, tags: [["Products"], ["Tools"], ["Platforms"]] },
 ];
 
 const jsonLd = {
@@ -56,14 +58,14 @@ const jsonLd = {
       </div>
     </section>
 
-    <section class="block" id="services" data-node>
+    <section class="block" id="services" data-node="90">
       <div class="wrap flowing">
-        <span class="label">{t(locale, "services.label")}</span>
+        <h2>{t(locale, "services.title")}</h2>
         <div class="services">
           {
-            services.map(({ icon, n }) => (
+            services.map(({ icon, model, n }) => (
               <div class="service">
-                <div class="glyph" data-icon={icon}>
+                <div class="glyph" data-icon={icon} data-model={model}>
                   <Icon name={icon} />
                 </div>
                 <h3>{t(locale, `services.${n}.title`)}</h3>
@@ -75,38 +77,35 @@ const jsonLd = {
       </div>
     </section>
 
-    <section class="block" id="projects">
+    <section class="block" id="path">
       <div class="wrap flowing">
-        <span class="label">{t(locale, "projects.label")}</span>
-        <h2>{t(locale, "projects.title")}</h2>
-        <div class="cards">
+        <h2>{t(locale, "path.title")}</h2>
+        <ol class="stops">
           {
-            projects.map(({ n, stack, steps }) => (
-              <article class="card" data-node>
-                <div class="shot">
-                  {steps.map(([name, icon]) => (
-                    <b>
-                      {icon && <Icon name={icon} />}
-                      {name}
-                    </b>
-                  ))}
-                </div>
+            path.map(({ n, tags }) => (
+              <li class="stop" data-node="18">
+                <span class="when">{t(locale, `path.${n}.when`)}</span>
                 <div>
-                  <span class="label">{stack}</span>
-                  <h3>{t(locale, `projects.${n}.title`)}</h3>
-                  <p>{t(locale, `projects.${n}.text`)}</p>
-                  <span class="metric">{t(locale, `projects.${n}.metric`)}</span>
+                  <h3>{t(locale, `path.${n}.title`)}</h3>
+                  <p>{t(locale, `path.${n}.text`)}</p>
+                  <ul class="tags">
+                    {tags.map(([name, icon]) => (
+                      <li>
+                        {icon && <Icon name={icon} />}
+                        {name}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </article>
+              </li>
             ))
           }
-        </div>
+        </ol>
       </div>
     </section>
 
     <section class="end" id="contact">
       <div class="wrap flowing">
-        <span class="label">{t(locale, "end.label")}</span>
         <h2>{t(locale, "end.title")}</h2>
         <p>{t(locale, "end.text")}</p>
         <a class="pill cta big" id="endcta" href={`mailto:${SITE.email}`}>{t(locale, "cta")}</a>
@@ -134,6 +133,7 @@ const jsonLd = {
   };
   lazy("#stage", () => import("../scripts/hero"));
   lazy("#services", () => import("../scripts/tokens"));
+  lazy("#path", () => import("../scripts/path"));
 </script>
 
 <style>
@@ -188,15 +188,6 @@ const jsonLd = {
   section.block {
     padding-block: 64px;
   }
-  section > .wrap > .label {
-    display: block;
-    margin-bottom: 24px;
-  }
-  #projects h2,
-  .end h2 {
-    margin-top: -8px;
-  }
-
   .services {
     display: grid;
     gap: 32px;
@@ -218,18 +209,15 @@ const jsonLd = {
     margin-bottom: 16px;
     display: grid;
     place-items: center;
-    background: var(--surface);
-    border-radius: 12px;
   }
   .glyph :global(svg.ico) {
-    width: 22px;
-    height: 22px;
+    width: 32px;
+    height: 32px;
   }
   .glyph:global(.token) {
-    width: 128px;
-    height: 128px;
-    background: none;
-    margin: -24px 0 -4px -30px;
+    width: 150px;
+    height: 150px;
+    margin: -24px 0 -8px -36px;
   }
   .glyph :global(canvas) {
     width: 100%;
@@ -237,97 +225,62 @@ const jsonLd = {
     display: block;
   }
 
-  .cards {
+  .stops {
+    list-style: none;
+    margin: 40px 0 0;
+    padding: 0;
     display: grid;
-    gap: 24px;
+    gap: 56px;
   }
-  .card {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 20px;
+  .stop {
     display: grid;
-    gap: 24px;
-    transition: transform 0.3s var(--ease);
-  }
-  .card:hover {
-    transform: translateY(-3px);
+    gap: 12px;
   }
   @media (min-width: 900px) {
-    .card {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      align-items: center;
-      padding: 24px;
+    .stop {
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: 32px;
     }
   }
-  .shot {
-    position: relative;
-    min-height: 148px;
-    border-radius: 10px;
-    background: var(--paper);
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    gap: 6px;
-    padding: 0 12px;
-    overflow: hidden;
-  }
-  .shot::before {
-    content: "";
-    position: absolute;
-    left: 12%;
-    right: 12%;
-    top: 50%;
-    height: 4px;
-    margin-top: -2px;
-    background: var(--pipeline);
-    border-radius: 4px;
-  }
-  .shot b {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    position: relative;
-    font: 500 11px/1 var(--mono);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border: 1.5px solid var(--ink);
-    border-radius: 8px;
-    padding: 11px 8px;
-    background: var(--surface);
-  }
-  .card h3 {
-    margin: 10px 0 8px;
-    font: 500 clamp(28px, 3.2vw, 40px)/1.1 var(--display);
-    letter-spacing: -0.02em;
-  }
-  .card p {
-    margin: 0 0 14px;
-    color: var(--ink-muted);
-    max-width: 46ch;
-  }
-  .metric {
-    display: inline-block;
+  .when {
     font: 500 12px/1 var(--mono);
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    background: var(--pipeline-soft);
     color: var(--pipeline-ink);
-    padding: 8px 10px;
-    border-radius: 6px;
+    padding-top: 12px;
   }
-  @media (max-width: 560px) {
-    .shot {
-      padding: 0 6px;
-      gap: 4px;
-    }
-    .shot b :global(svg) {
-      display: none;
-    }
-    .shot b {
-      font-size: 10px;
-      letter-spacing: 0.02em;
-      padding: 9px 5px;
-    }
+  .stop h3 {
+    margin: 0 0 8px;
+    font: 500 clamp(26px, 3vw, 36px)/1.15 var(--display);
+    letter-spacing: -0.02em;
+  }
+  .stop p {
+    margin: 0 0 16px;
+    color: var(--ink-muted);
+    max-width: 52ch;
+  }
+  .tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tags li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 11px/1 var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .tags :global(svg.ico) {
+    width: 14px;
+    height: 14px;
   }
 
   .end {

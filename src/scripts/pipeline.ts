@@ -59,7 +59,8 @@ function build() {
   samples = [];
   for (let l = 0; l <= total; l += 4) samples.push([l, path.getPointAtLength(l).y]);
 
-  nodes = [...main.querySelectorAll("[data-node]")].map((el) => dot(railX, rel(el).y + 40, 7));
+  // data-node can carry the dot's offset from the top of its element; 40 by default.
+  nodes = [...main.querySelectorAll<HTMLElement>("[data-node]")].map((el) => dot(railX, rel(el).y + (Number(el.dataset.node) || 40), 7));
   const end = dot(cta.x - 6, endY, 9);
   end.at = total;
   nodes.push(end);
