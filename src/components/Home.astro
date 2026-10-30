@@ -58,7 +58,10 @@ const jsonLd = {
         </div>
         <div class="stage" id="stage">
           <canvas role="img" aria-label={t(locale, "hero.stage")}></canvas>
-          <span class="label hint" aria-hidden="true">{t(locale, "hero.hint")}</span>
+          <span class="label hint" aria-hidden="true">01 · Commit</span>
+          <button class="play" type="button" hidden aria-label={t(locale, "hero.pause")} data-pause={t(locale, "hero.pause")} data-play={t(locale, "hero.play")}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"></path><path class="i-play" d="M8 5l11 7-11 7z"></path></svg>
+          </button>
         </div>
       </div>
     </section>
@@ -246,7 +249,39 @@ const jsonLd = {
     color: #9aa0aa;
     pointer-events: none;
   }
-
+  .play {
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.08);
+    color: #c9ccd2;
+    cursor: pointer;
+    transition: background 0.2s var(--ease);
+  }
+  .play:hover {
+    background: rgb(255 255 255 / 0.16);
+  }
+  .play:focus-visible {
+    outline-color: var(--pipeline);
+  }
+  .play svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+  .play .i-play,
+  .play[aria-pressed="true"] .i-pause {
+    display: none;
+  }
+  .play[aria-pressed="true"] .i-play {
+    display: inline;
+  }
 
   main {
     position: relative;

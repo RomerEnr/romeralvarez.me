@@ -1,4 +1,5 @@
-// The envelope from the hero rides the head of the line down the page and lands next to the contact button.
+// The envelope from the hero rides the head of the line down the page, turning as it goes, and spins next to the
+// contact button once the line arrives.
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
@@ -47,28 +48,33 @@ function start(renderer: THREE.WebGLRenderer) {
     piece.add(m);
   });
 
-  // It shows up once the page has been scrolled, the same moment it leaves the hero's pile.
+  // It shows up once the page has been scrolled.
   let at = { x: 0, y: 0, end: false };
-  let lastY = 0;
   let shown = 0;
-  let tumble = 0;
+  let turn = 0;
+  let spin = 0;
+  let shift = 0;
+  let last = performance.now();
   main.addEventListener("pipe:head", (e) => (at = (e as CustomEvent).detail));
 
   function tick(now: number) {
     const want = scrollY > 120 ? 1 : 0;
     shown += (want - shown) * 0.12;
-    const fall = at.y - lastY;
-    lastY = at.y;
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
     // On the way down it sits just above the head; at the end it rests on the last stretch, before the button.
-    const x = at.end ? at.x - 40 : at.x;
+    shift += ((at.end ? -40 : 0) - shift) * 0.12;
+    const x = at.x + shift;
     canvas.style.transform = `translate(${x - SIZE / 2}px, ${at.y - SIZE * 0.8}px) scale(${shown})`;
     canvas.style.opacity = shown < 0.02 ? "0" : "1";
     if (shown > 0.02 && piece.children.length) {
-      // It tumbles while the line moves and settles facing you once the line stops.
+      // It turns with the line: one full turn every 400px down, backwards on the way up. At the end it keeps
+      // spinning on its own, and the spin it gathered there stays, so leaving the end never jumps.
+      if (at.end) spin += dt * 2.4;
+      const target = (at.y / 400) * Math.PI * 2 + spin;
+      turn += (target - turn) * (at.end ? 1 : 0.15);
       // The envelope lies flat, so it leans toward you to show its seal.
-      tumble = (tumble + fall * 0.02) * 0.94;
-      piece.rotation.x = 0.9 + tumble;
-      piece.rotation.y = Math.sin(now / 900) * 0.4;
+      piece.rotation.set(0.9, turn, 0, "YXZ");
       renderer.render(scene, camera);
     }
     requestAnimationFrame(tick);
