@@ -6,7 +6,7 @@ import type { IconName } from "../lib/icons";
 import { SITE } from "../site";
 import { formatDate, getPosts, postUrl } from "../lib/blog";
 import { Image } from "astro:assets";
-import photo from "../assets/romer.jpg";
+import photo from "../assets/romer.png";
 
 interface Props {
   locale: Locale;
@@ -91,7 +91,10 @@ const jsonLd = {
       <div class="wrap flowing">
         <div class="path-head">
           <h2>{t(locale, "path.title")}</h2>
-          <Image class="photo" src={photo} alt={SITE.name} widths={[240, 480]} sizes="240px" />
+          <figure class="portrait">
+            <span class="disc" aria-hidden="true"></span>
+            <Image src={photo} alt={SITE.name} widths={[360, 720]} sizes="(min-width: 900px) 360px, 240px" />
+          </figure>
         </div>
         <ol class="stops">
           {
@@ -361,22 +364,40 @@ const jsonLd = {
   .path-head h2 {
     margin: 0;
   }
-  .photo {
-    width: 160px;
-    height: auto;
+  /* The cutout stands on the bottom edge of its frame, over an orange disc; path.ts raises it on scroll. */
+  .portrait {
+    position: relative;
+    width: 240px;
     aspect-ratio: 1;
-    object-fit: cover;
-    border-radius: 16px;
+    margin: 0;
+    overflow: hidden;
     order: -1;
+    border-bottom: 2px solid var(--pipeline);
+  }
+  .disc {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: -10%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--pipeline-soft);
+  }
+  .portrait :global(img) {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: auto;
   }
   @media (min-width: 900px) {
     .path-head {
-      grid-template-columns: minmax(0, 1fr) 240px;
+      grid-template-columns: minmax(0, 1fr) 360px;
       align-items: end;
       gap: 32px;
     }
-    .photo {
-      width: 240px;
+    .portrait {
+      width: 360px;
       order: 0;
     }
   }
