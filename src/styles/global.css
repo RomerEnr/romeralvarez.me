@@ -31,6 +31,18 @@ body {
 
 a {
   color: inherit;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+::selection {
+  background: var(--pipeline-soft);
+  color: var(--ink);
+}
+
+html {
+  caret-color: var(--pipeline);
+  scrollbar-color: var(--line-strong) var(--paper);
 }
 
 :focus-visible {
@@ -108,7 +120,7 @@ a {
 
 h1 {
   margin: 0;
-  font: 500 clamp(54px, 9.4vw, 128px)/0.95 var(--display);
+  font: 500 clamp(54px, 8vw, 96px)/0.95 var(--display);
   letter-spacing: -0.035em;
   text-wrap: balance;
 }

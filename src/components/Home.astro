@@ -58,9 +58,8 @@ const jsonLd = {
       </div>
     </section>
 
-    <section class="block" id="services" data-node>
+    <section class="block" id="services" data-node="90">
       <div class="wrap flowing">
-        <span class="label">{t(locale, "services.label")}</span>
         <h2>{t(locale, "services.title")}</h2>
         <div class="services">
           {
@@ -80,7 +79,6 @@ const jsonLd = {
 
     <section class="block" id="path">
       <div class="wrap flowing">
-        <span class="label">{t(locale, "path.label")}</span>
         <h2>{t(locale, "path.title")}</h2>
         <ol class="stops">
           {
@@ -108,7 +106,6 @@ const jsonLd = {
 
     <section class="end" id="contact">
       <div class="wrap flowing">
-        <span class="label">{t(locale, "end.label")}</span>
         <h2>{t(locale, "end.title")}</h2>
         <p>{t(locale, "end.text")}</p>
         <a class="pill cta big" id="endcta" href={`mailto:${SITE.email}`}>{t(locale, "cta")}</a>
@@ -191,16 +188,6 @@ const jsonLd = {
   section.block {
     padding-block: 64px;
   }
-  section > .wrap > .label {
-    display: block;
-    margin-bottom: 24px;
-  }
-  #services h2,
-  #path h2,
-  .end h2 {
-    margin-top: -8px;
-  }
-
   .services {
     display: grid;
     gap: 32px;
@@ -222,17 +209,14 @@ const jsonLd = {
     margin-bottom: 16px;
     display: grid;
     place-items: center;
-    background: var(--surface);
-    border-radius: 12px;
   }
   .glyph :global(svg.ico) {
-    width: 22px;
-    height: 22px;
+    width: 32px;
+    height: 32px;
   }
   .glyph:global(.token) {
     width: 150px;
     height: 150px;
-    background: none;
     margin: -24px 0 -8px -36px;
   }
   .glyph :global(canvas) {
