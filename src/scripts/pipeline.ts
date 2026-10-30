@@ -84,11 +84,22 @@ function frame(once?: boolean) {
     const p = path.getPointAtLength(drawn);
     main.dispatchEvent(new CustomEvent("pipe:head", { detail: { x: p.x, y: p.y, end: drawn >= total - 1 } }));
   }
-  if (!once) requestAnimationFrame(() => frame());
+  // Keep drawing while the line is still catching up with the scroll; a scroll starts it again.
+  if (once) return;
+  if (Math.abs(target - drawn) > 0.5) requestAnimationFrame(() => frame());
+  else running = false;
 }
+
+let running = false;
+function wake() {
+  if (running) return;
+  running = true;
+  requestAnimationFrame(() => frame());
+}
+addEventListener("scroll", wake, { passive: true });
 
 document.fonts.ready.then(() => {
   build();
-  requestAnimationFrame(() => frame());
+  wake();
 });
 new ResizeObserver(() => requestAnimationFrame(build)).observe(main);

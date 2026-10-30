@@ -34,8 +34,11 @@ const { locale } = Astro.props;
     display: flex;
     gap: 20px;
   }
+  /* Taller hit area for fingers without moving the text. */
   .links a {
     text-decoration: none;
+    padding-block: 14px;
+    margin-block: -14px;
   }
   .links a:hover {
     color: var(--ink);

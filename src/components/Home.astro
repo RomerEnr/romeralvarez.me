@@ -50,7 +50,7 @@ const jsonLd = {
 ---
 
 <Base locale={locale} alternates={alternates} jsonLd={jsonLd}>
-  <main id="top">
+  <main id="main">
     <section class="hero">
       <div class="wrap">
         <div>
@@ -178,7 +178,9 @@ const jsonLd = {
     }, { rootMargin: "200px" });
     io.observe(el);
   };
-  lazy("#stage", () => Promise.all([import("../scripts/hero"), import("../scripts/rider")]));
+  // The hero is in view from the start, so its scene waits for the page to finish loading first.
+  const afterLoad = (run: () => void) => (document.readyState === "complete" ? run() : addEventListener("load", run, { once: true }));
+  afterLoad(() => lazy("#stage", () => Promise.all([import("../scripts/hero"), import("../scripts/rider")])));
   lazy("#services", () => import("../scripts/tokens"));
   lazy("#path", () => import("../scripts/path"));
 
@@ -254,7 +256,7 @@ const jsonLd = {
     position: absolute;
     left: 16px;
     bottom: 14px;
-    color: #9aa0aa;
+    color: var(--stage-muted);
     pointer-events: none;
   }
   .play {
@@ -267,13 +269,13 @@ const jsonLd = {
     place-items: center;
     border: 0;
     border-radius: 50%;
-    background: rgb(255 255 255 / 0.08);
-    color: #c9ccd2;
+    background: var(--stage-control);
+    color: var(--stage-fg);
     cursor: pointer;
     transition: background 0.2s var(--ease);
   }
   .play:hover {
-    background: rgb(255 255 255 / 0.16);
+    background: var(--stage-control-hover);
   }
   .play:focus-visible {
     outline-color: var(--pipeline);

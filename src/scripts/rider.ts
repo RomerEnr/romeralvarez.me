@@ -2,10 +2,12 @@
 // contact button once the line arrives.
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const main = document.querySelector("main")!;
-const SIZE = 88;
+// Smaller on phones, where the line runs close to the screen edge.
+const SIZE = innerWidth < 560 ? 64 : 88;
 const canvas = document.createElement("canvas");
 canvas.className = "rider";
 canvas.setAttribute("aria-hidden", "true");
@@ -23,6 +25,7 @@ function start(renderer: THREE.WebGLRenderer) {
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   renderer.setSize(SIZE, SIZE, false);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  canvas.style.width = canvas.style.height = `${SIZE}px`;
   main.appendChild(canvas);
 
   const scene = new THREE.Scene();
@@ -37,7 +40,7 @@ function start(renderer: THREE.WebGLRenderer) {
 
   const piece = new THREE.Group();
   scene.add(piece);
-  const loader = new GLTFLoader();
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const file = "1";
   loader.load(`/models/${file}.glb`, (gltf) => {
     const m = gltf.scene;
@@ -55,7 +58,20 @@ function start(renderer: THREE.WebGLRenderer) {
   let spin = 0;
   let shift = 0;
   let last = performance.now();
-  main.addEventListener("pipe:head", (e) => (at = (e as CustomEvent).detail));
+  // The loop runs only while something moves: the pop, the turn after a scroll, or the spin at the end.
+  let running = false;
+  function wake() {
+    if (!running) {
+      running = true;
+      last = performance.now();
+      requestAnimationFrame(tick);
+    }
+  }
+  main.addEventListener("pipe:head", (e) => {
+    at = (e as CustomEvent).detail;
+    wake();
+  });
+  addEventListener("scroll", wake, { passive: true });
 
   function tick(now: number) {
     const want = scrollY > 120 ? 1 : 0;
@@ -64,20 +80,25 @@ function start(renderer: THREE.WebGLRenderer) {
     last = now;
     // On the way down it sits just above the head; at the end it rests on the last stretch, before the button.
     shift += ((at.end ? -40 : 0) - shift) * 0.12;
-    const x = at.x + shift;
-    canvas.style.transform = `translate(${x - SIZE / 2}px, ${at.y - SIZE * 0.8}px) scale(${shown})`;
+    const x = Math.max(0, at.x + shift - SIZE / 2);
+    canvas.style.transform = `translate(${x}px, ${at.y - SIZE * 0.8}px) scale(${shown})`;
     canvas.style.opacity = shown < 0.02 ? "0" : "1";
-    if (shown > 0.02 && piece.children.length) {
+    const r = canvas.getBoundingClientRect();
+    const onScreen = r.bottom > 0 && r.top < innerHeight;
+    let target = turn;
+    if (shown > 0.02 && piece.children.length && onScreen) {
       // It turns with the line: one full turn every 400px down, backwards on the way up. At the end it keeps
       // spinning on its own, and the spin it gathered there stays, so leaving the end never jumps.
       if (at.end) spin += dt * 2.4;
-      const target = (at.y / 400) * Math.PI * 2 + spin;
+      target = (at.y / 400) * Math.PI * 2 + spin;
       turn += (target - turn) * (at.end ? 1 : 0.15);
       // The envelope lies flat, so it leans toward you to show its seal.
       piece.rotation.set(0.9, turn, 0, "YXZ");
       renderer.render(scene, camera);
     }
-    requestAnimationFrame(tick);
+    const settled = Math.abs(want - shown) < 0.005 && Math.abs(target - turn) < 0.002 && Math.abs((at.end ? -40 : 0) - shift) < 0.2;
+    if ((at.end && onScreen && shown > 0.02) || !settled || !piece.children.length) requestAnimationFrame(tick);
+    else running = false;
   }
-  requestAnimationFrame(tick);
+  wake();
 }

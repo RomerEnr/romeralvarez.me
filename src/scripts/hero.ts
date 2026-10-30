@@ -2,6 +2,7 @@
 // to the metrics, and Terraform closes everything into one module at the end.
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { ICONS, type IconName } from "../lib/icons";
 
 const stage = document.getElementById("stage")!;
@@ -74,7 +75,7 @@ function start(renderer: THREE.WebGLRenderer) {
   });
 
   // Toy pieces generated with Higgsfield (image to 3D). Each one is scaled to a size and set on the floor.
-  const loader = new GLTFLoader();
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   function piece(parent: THREE.Object3D, file: string, size: number, x = 0, y = 0, z = 0, copies = 1) {
     const holders = Array.from({ length: copies }, () => {
       const h = new THREE.Group();
@@ -292,8 +293,16 @@ function start(renderer: THREE.WebGLRenderer) {
   new ResizeObserver(size).observe(stage);
   size();
 
-  let visible = true;
-  new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(stage);
+  // The loop runs only while the stage is on screen.
+  let visible = false;
+  let running = false;
+  new IntersectionObserver(([e]) => {
+    visible = e.isIntersecting;
+    if (visible && !running) {
+      running = true;
+      requestAnimationFrame(tick);
+    }
+  }).observe(stage);
 
   // The story loops, so it gets a pause button; while paused the clock stands still.
   let pausedAt = 0;
@@ -311,17 +320,18 @@ function start(renderer: THREE.WebGLRenderer) {
   });
 
   function tick(now: number) {
-    if (visible) {
-      const t = reduce ? HOLD - 1 : (((pausedAt || now) - startedAt) / 1000) % OUT;
-      tilt.x += (pointer.y * 0.15 - tilt.x) * 0.06;
-      tilt.y += (pointer.x * 0.35 - tilt.y) * 0.06;
-      world.rotation.set(-tilt.x, 0.3 + tilt.y, 0);
-      pose(t);
-      camera.position.set(5.5, 6.5, 9).multiplyScalar(baseDist * (1 + 0.5 * zoom));
-      camera.lookAt(0.2 - 0.2 * zoom, 0.75 + 0.35 * zoom, -0.2);
-      renderer.render(scene, camera);
+    if (!visible) {
+      running = false;
+      return;
     }
+    const t = reduce ? HOLD - 1 : (((pausedAt || now) - startedAt) / 1000) % OUT;
+    tilt.x += (pointer.y * 0.15 - tilt.x) * 0.06;
+    tilt.y += (pointer.x * 0.35 - tilt.y) * 0.06;
+    world.rotation.set(-tilt.x, 0.3 + tilt.y, 0);
+    pose(t);
+    camera.position.set(5.5, 6.5, 9).multiplyScalar(baseDist * (1 + 0.5 * zoom));
+    camera.lookAt(0.2 - 0.2 * zoom, 0.75 + 0.35 * zoom, -0.2);
+    renderer.render(scene, camera);
     requestAnimationFrame(tick);
   }
-  requestAnimationFrame(tick);
 }
