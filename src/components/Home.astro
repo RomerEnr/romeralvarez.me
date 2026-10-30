@@ -93,7 +93,7 @@ const jsonLd = {
           <h2>{t(locale, "path.title")}</h2>
           <figure class="portrait">
             <span class="disc" aria-hidden="true"></span>
-            <Image src={photo} alt={SITE.name} widths={[360, 720]} sizes="(min-width: 900px) 360px, 240px" />
+            <Image src={photo} alt={SITE.name} widths={[300, 600]} sizes="(min-width: 900px) 300px, 240px" />
           </figure>
         </div>
         <ol class="stops">
@@ -393,13 +393,16 @@ const jsonLd = {
     height: auto;
   }
   @media (min-width: 900px) {
+    /* On wide screens the character stands beside the title and rises into the section's top padding,
+       so it adds little height above the title. */
     .path-head {
-      grid-template-columns: minmax(0, 1fr) 360px;
+      grid-template-columns: minmax(0, 1fr) 300px;
       align-items: end;
       gap: 32px;
     }
     .portrait {
-      width: 360px;
+      width: 300px;
+      margin-top: -96px;
       order: 0;
     }
   }
