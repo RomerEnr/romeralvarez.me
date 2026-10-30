@@ -7,6 +7,7 @@ const R = 16;
 
 let total = 0;
 let drawn = 0;
+let head = -1;
 let samples: [number, number][] = [];
 let nodes: { el: SVGCircleElement; at: number }[] = [];
 
@@ -66,6 +67,7 @@ function build() {
   nodes.push(end);
 
   path.style.strokeDasharray = String(total);
+  head = -1;
   frame(true);
 }
 
@@ -76,6 +78,12 @@ function frame(once?: boolean) {
   drawn = once || reduce ? target : drawn + (target - drawn) * 0.08;
   path.style.strokeDashoffset = String(total - drawn);
   for (const n of nodes) n.el.classList.toggle("off", drawn < n.at - 2);
+  // The head of the line, for the piece that rides it (rider.ts).
+  if (total && Math.abs(drawn - head) > 0.5) {
+    head = drawn;
+    const p = path.getPointAtLength(drawn);
+    main.dispatchEvent(new CustomEvent("pipe:head", { detail: { x: p.x, y: p.y, end: drawn >= total - 1 } }));
+  }
   if (!once) requestAnimationFrame(() => frame());
 }
 
