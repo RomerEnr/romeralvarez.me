@@ -5,6 +5,8 @@ import { locales, localePath, t, type Locale } from "../i18n";
 import type { IconName } from "../lib/icons";
 import { SITE } from "../site";
 import { formatDate, getPosts, postUrl } from "../lib/blog";
+import { Image } from "astro:assets";
+import photo from "../assets/romer.jpg";
 
 interface Props {
   locale: Locale;
@@ -87,7 +89,10 @@ const jsonLd = {
 
     <section class="block" id="path">
       <div class="wrap flowing">
-        <h2>{t(locale, "path.title")}</h2>
+        <div class="path-head">
+          <h2>{t(locale, "path.title")}</h2>
+          <Image class="photo" src={photo} alt={SITE.name} widths={[240, 480]} sizes="240px" />
+        </div>
         <ol class="stops">
           {
             path.map(({ n, tags }) => (
@@ -156,7 +161,7 @@ const jsonLd = {
 
 <script>
   import "../scripts/pipeline";
-  import "../scripts/scramble";
+  import "../scripts/reveal";
 
   // The 3D scenes pull in three.js, so they load only when their section comes into view.
   const lazy = (selector: string, load: () => Promise<unknown>) => {
@@ -326,6 +331,55 @@ const jsonLd = {
     display: block;
   }
 
+  /* Titles split into words by reveal.ts. The extra padding keeps descenders out of the clip. */
+  :global(h2.rise .word) {
+    display: inline-block;
+    overflow: hidden;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+    vertical-align: top;
+  }
+  :global(h2.rise .word > span) {
+    display: inline-block;
+    transform: translateY(105%);
+    opacity: 0;
+    filter: blur(6px);
+    transition:
+      transform 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.9s ease-out,
+      filter 0.9s ease-out;
+  }
+  :global(h2.rise.in .word > span) {
+    transform: none;
+    opacity: 1;
+    filter: none;
+  }
+  .path-head {
+    display: grid;
+    gap: 24px;
+  }
+  .path-head h2 {
+    margin: 0;
+  }
+  .photo {
+    width: 160px;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 16px;
+    order: -1;
+  }
+  @media (min-width: 900px) {
+    .path-head {
+      grid-template-columns: minmax(0, 1fr) 240px;
+      align-items: end;
+      gap: 32px;
+    }
+    .photo {
+      width: 240px;
+      order: 0;
+    }
+  }
   .stops {
     list-style: none;
     margin: 40px 0 0;
