@@ -4,7 +4,7 @@ import Icon from "./Icon.astro";
 import { locales, localePath, t, type Locale } from "../i18n";
 import type { IconName } from "../lib/icons";
 import { SITE } from "../site";
-import { formatDate, getPosts, postUrl } from "../lib/blog";
+import { formatDate, getPosts, postSlug, postUrl } from "../lib/blog";
 import { Image } from "astro:assets";
 import photo from "../assets/romer.png";
 
@@ -128,7 +128,7 @@ const jsonLd = {
           {
             posts.map((post) => (
               <li>
-                <a href={postUrl(post)} hreflang="es">
+                <a href={postUrl(post)} hreflang="es" data-umami-event="article" data-umami-event-slug={postSlug(post)}>
                   <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, locale)}</time>
                   <span>{post.data.title}</span>
                 </a>
@@ -136,7 +136,7 @@ const jsonLd = {
             ))
           }
         </ul>
-        <a class="more" href="/es/blog/" hreflang="es">{t(locale, "writing.all")} →</a>
+        <a class="more" href="/es/blog/" hreflang="es" data-umami-event="all-articles">{t(locale, "writing.all")} →</a>
       </div>
     </section>
 
@@ -145,15 +145,15 @@ const jsonLd = {
         <h2>{t(locale, "end.title")}</h2>
         <p>{t(locale, "end.text")}</p>
         <div class="reach">
-          <a class="pill cta big" id="endcta" href={`mailto:${SITE.email}`}>{t(locale, "cta")}</a>
+          <a class="pill cta big" id="endcta" href={`mailto:${SITE.email}`} data-umami-event="email" data-umami-event-place="contact">{t(locale, "cta")}</a>
           <span class="email">
             <span>{SITE.email}</span>
-            <button type="button" class="copy" data-copied={t(locale, "end.copied")}>{t(locale, "end.copy")}</button>
+            <button type="button" class="copy" data-copied={t(locale, "end.copied")} data-umami-event="copy-email">{t(locale, "end.copy")}</button>
           </span>
         </div>
         <p class="elsewhere">
-          <a href={SITE.linkedin} rel="me">LinkedIn</a>
-          <a href={SITE.github} rel="me">GitHub</a>
+          <a href={SITE.linkedin} rel="me" data-umami-event="profile" data-umami-event-network="linkedin" data-umami-event-place="contact">LinkedIn</a>
+          <a href={SITE.github} rel="me" data-umami-event="profile" data-umami-event-network="github" data-umami-event-place="contact">GitHub</a>
         </p>
       </div>
     </section>

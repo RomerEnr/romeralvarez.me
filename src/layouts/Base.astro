@@ -48,6 +48,11 @@ const ogLocale = { en: "en_US", it: "it_IT", es: "es_ES" }[locale];
     <Font cssVariable="--font-sans" />
     <Font cssVariable="--font-mono" />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    {
+      import.meta.env.PROD && (
+        <script is:inline defer src="https://cloud.umami.is/script.js" data-website-id={SITE.umami} data-domains="romeralvarez.me" />
+      )
+    }
   </head>
   <body>
     <Header locale={locale} alternates={alternates} />

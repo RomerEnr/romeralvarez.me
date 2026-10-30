@@ -13,9 +13,9 @@ const { locale } = Astro.props;
   <div class="wrap">
     <span class="label">romeralvarez.me</span>
     <span class="links">
-      <a class="label" href={SITE.github} rel="me">GitHub</a>
-      <a class="label" href={SITE.linkedin} rel="me">LinkedIn</a>
-      <a class="label" href={`mailto:${SITE.email}`}>Email</a>
+      <a class="label" href={SITE.github} rel="me" data-umami-event="profile" data-umami-event-network="github" data-umami-event-place="footer">GitHub</a>
+      <a class="label" href={SITE.linkedin} rel="me" data-umami-event="profile" data-umami-event-network="linkedin" data-umami-event-place="footer">LinkedIn</a>
+      <a class="label" href={`mailto:${SITE.email}`} data-umami-event="email" data-umami-event-place="footer">Email</a>
     </span>
     <span class="label">{t(locale, "footer.place")}</span>
   </div>
