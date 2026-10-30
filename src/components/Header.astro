@@ -12,7 +12,7 @@ const home = localePath(locale);
 const links = [
   { href: `${home}#services`, label: t(locale, "nav.services") },
   { href: `${home}#path`, label: t(locale, "nav.path") },
-  { href: "/es/blog/", label: t(locale, "nav.blog") },
+  { href: `${home}#writing`, label: t(locale, "nav.writing") },
   { href: `${home}#contact`, label: t(locale, "nav.contact") },
 ];
 ---
@@ -30,6 +30,9 @@ const links = [
           ))
         }
       </div>
+      <ul class="inline">
+        {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
       <details class="menu">
         <summary class="pill dark">{t(locale, "nav.menu")}</summary>
         <ul>
@@ -91,6 +94,33 @@ const links = [
     background: var(--ink);
     color: var(--paper);
   }
+  .inline {
+    display: none;
+    gap: 4px;
+    margin: 0 8px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .inline a {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 999px;
+    text-decoration: none;
+    font: 500 15px/1 var(--sans);
+    color: var(--ink-muted);
+    transition: color 0.2s var(--ease);
+  }
+  .inline a:hover {
+    color: var(--ink);
+  }
+  @media (min-width: 1080px) {
+    .inline {
+      display: flex;
+    }
+    .menu {
+      display: none;
+    }
+  }
   .menu {
     position: relative;
   }
@@ -137,7 +167,7 @@ const links = [
     .langs a {
       padding: 8px 7px;
     }
-    .menu {
+    .actions .pill.cta {
       display: none;
     }
   }

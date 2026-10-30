@@ -4,6 +4,7 @@ import Icon from "./Icon.astro";
 import { locales, localePath, t, type Locale } from "../i18n";
 import type { IconName } from "../lib/icons";
 import { SITE } from "../site";
+import { formatDate, getPosts, postUrl } from "../lib/blog";
 
 interface Props {
   locale: Locale;
@@ -24,8 +25,11 @@ const path: { n: 1 | 2 | 3 | 4; tags: [string, IconName?][] }[] = [
   { n: 1, tags: [["Linux"], ["Azure"], ["Docker", "docker"]] },
   { n: 2, tags: [["Java"], ["Spring Boot"], ["Kafka"], ["PostgreSQL"]] },
   { n: 3, tags: [["AWS", "aws"], ["Kubernetes", "kubernetes"], ["Terraform", "terraform"], ["Grafana", "grafana"], ["Bedrock"]] },
-  { n: 4, tags: [["Products"], ["Tools"], ["Platforms"]] },
+  { n: 4, tags: [["English"], ["Italiano"], ["Español"]] },
 ];
+
+// The latest articles. They are written in Spanish, whatever the page language.
+const posts = (await getPosts("es")).slice(0, 3);
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -48,12 +52,16 @@ const jsonLd = {
     <section class="hero">
       <div class="wrap">
         <div>
-          <h1>{SITE.jobTitle}.</h1>
-          <p class="lead" id="lead">{t(locale, "hero.lead")}</p>
+          <h1>{t(locale, "hero.title")}</h1>
+          <p class="lead">{t(locale, "hero.lead")}</p>
+          <p class="status" id="lead">{t(locale, "hero.status")}</p>
         </div>
-        <div class="stage" id="stage" role="img" aria-label={t(locale, "hero.stage")}>
-          <canvas></canvas>
-          <span class="label hint">01 · Commit</span>
+        <div class="stage" id="stage">
+          <canvas role="img" aria-label={t(locale, "hero.stage")}></canvas>
+          <span class="label hint" aria-hidden="true">01 · Commit</span>
+          <button class="play" type="button" hidden aria-label={t(locale, "hero.pause")} data-pause={t(locale, "hero.pause")} data-play={t(locale, "hero.play")}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"></path><path class="i-play" d="M8 5l11 7-11 7z"></path></svg>
+          </button>
         </div>
       </div>
     </section>
@@ -104,11 +112,41 @@ const jsonLd = {
       </div>
     </section>
 
+    <section class="block" id="writing" data-node="90">
+      <div class="wrap flowing">
+        <h2>{t(locale, "writing.title")}</h2>
+        <p class="intro">{t(locale, "writing.text")}</p>
+        <ul class="posts">
+          {
+            posts.map((post) => (
+              <li>
+                <a href={postUrl(post)} hreflang="es">
+                  <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, locale)}</time>
+                  <span>{post.data.title}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <a class="more" href="/es/blog/" hreflang="es">{t(locale, "writing.all")} →</a>
+      </div>
+    </section>
+
     <section class="end" id="contact">
       <div class="wrap flowing">
         <h2>{t(locale, "end.title")}</h2>
         <p>{t(locale, "end.text")}</p>
-        <a class="pill cta big" id="endcta" href={`mailto:${SITE.email}`}>{t(locale, "cta")}</a>
+        <div class="reach">
+          <a class="pill cta big" id="endcta" href={`mailto:${SITE.email}`}>{t(locale, "cta")}</a>
+          <span class="email">
+            <span>{SITE.email}</span>
+            <button type="button" class="copy" data-copied={t(locale, "end.copied")}>{t(locale, "end.copy")}</button>
+          </span>
+        </div>
+        <p class="elsewhere">
+          <a href={SITE.linkedin} rel="me">LinkedIn</a>
+          <a href={SITE.github} rel="me">GitHub</a>
+        </p>
       </div>
     </section>
 
@@ -134,6 +172,21 @@ const jsonLd = {
   lazy("#stage", () => import("../scripts/hero"));
   lazy("#services", () => import("../scripts/tokens"));
   lazy("#path", () => import("../scripts/path"));
+
+  // Copy the email for people whose browser has no mail app behind mailto.
+  const copy = document.querySelector<HTMLButtonElement>("#contact .copy");
+  copy?.addEventListener("click", async () => {
+    const email = copy.previousElementSibling!.textContent!;
+    try {
+      await navigator.clipboard.writeText(email);
+    } catch {
+      getSelection()?.selectAllChildren(copy.previousElementSibling!);
+      return;
+    }
+    const label = copy.textContent;
+    copy.textContent = copy.dataset.copied!;
+    setTimeout(() => (copy.textContent = label), 2000);
+  });
 </script>
 
 <style>
@@ -144,7 +197,7 @@ const jsonLd = {
   }
   @media (min-width: 960px) {
     .hero .wrap {
-      grid-template-columns: 1fr 400px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
       align-items: start;
       padding-block: 72px 40px;
     }
@@ -153,6 +206,24 @@ const jsonLd = {
     margin: 24px 0 0;
     max-width: 30ch;
     font: 400 clamp(20px, 2.2vw, 28px)/1.35 var(--sans);
+    text-wrap: pretty;
+  }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 0;
+    font-size: 15px;
+    color: var(--ink-muted);
+  }
+  .status::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--pipeline);
+    box-shadow: 0 0 0 4px var(--pipeline-soft);
   }
   .stage {
     position: relative;
@@ -161,11 +232,7 @@ const jsonLd = {
     overflow: hidden;
     aspect-ratio: 5 / 4;
     max-width: 100%;
-    cursor: grab;
     touch-action: pan-y;
-  }
-  .stage:active {
-    cursor: grabbing;
   }
   .stage canvas {
     position: absolute;
@@ -180,6 +247,39 @@ const jsonLd = {
     bottom: 14px;
     color: #9aa0aa;
     pointer-events: none;
+  }
+  .play {
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.08);
+    color: #c9ccd2;
+    cursor: pointer;
+    transition: background 0.2s var(--ease);
+  }
+  .play:hover {
+    background: rgb(255 255 255 / 0.16);
+  }
+  .play:focus-visible {
+    outline-color: var(--pipeline);
+  }
+  .play svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+  .play .i-play,
+  .play[aria-pressed="true"] .i-pause {
+    display: none;
+  }
+  .play[aria-pressed="true"] .i-play {
+    display: inline;
   }
 
   main {
@@ -250,11 +350,13 @@ const jsonLd = {
     padding-top: 12px;
   }
   .stop h3 {
+    text-wrap: balance;
     margin: 0 0 8px;
     font: 500 clamp(26px, 3vw, 36px)/1.15 var(--display);
     letter-spacing: -0.02em;
   }
   .stop p {
+    text-wrap: pretty;
     margin: 0 0 16px;
     color: var(--ink-muted);
     max-width: 52ch;
@@ -283,6 +385,48 @@ const jsonLd = {
     height: 14px;
   }
 
+  .intro {
+    margin: -16px 0 32px;
+    color: var(--ink-muted);
+    max-width: 52ch;
+  }
+  .posts {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .posts a {
+    display: grid;
+    gap: 6px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    transition: color 0.2s var(--ease);
+  }
+  @media (min-width: 900px) {
+    .posts a {
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: 32px;
+      align-items: baseline;
+    }
+  }
+  .posts time {
+    font-size: 14px;
+    color: var(--ink-muted);
+  }
+  .posts span {
+    font: 500 clamp(20px, 2vw, 26px)/1.25 var(--display);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .posts a:hover span {
+    color: var(--pipeline-ink);
+  }
+  .more {
+    font-weight: 500;
+  }
+
   .end {
     padding-block: 96px 64px;
   }
@@ -293,6 +437,39 @@ const jsonLd = {
     color: var(--ink-muted);
     max-width: 46ch;
     margin: 0 0 32px;
+  }
+  .reach {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 24px;
+  }
+  .email {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 17px;
+  }
+  .copy {
+    font: 500 14px/1 var(--sans);
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .copy:hover {
+    border-color: var(--line-strong);
+  }
+  .end .elsewhere {
+    display: flex;
+    gap: 24px;
+    margin: 32px 0 0;
+  }
+  .elsewhere a {
+    color: var(--ink);
+    font-weight: 500;
   }
 
   svg.pipe {
